@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>sharedCursor</title>
+<link rel="stylesheet" type="text/css" href="resources/main.css">
+<link rel="icon" href="resources/favicon.ico">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/3.2.1/es6-promise.min.js"></script>
+<script type="text/javascript" src="../cct.js"></script>
+<script type="text/javascript" src="exampleUtils.js"></script>
+<style>
+.mouseIndicator {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+.mouseIndicator > p {
+    position: relative;
+    top: -19px;
+    left: 25px;
+}
+#self {
+    background-color: rgba(255, 0, 0, 0.9);
+    z-index: 10000;
+}
+#remote {
+    background-color: rgba(0, 100, 255, 0.9);
+    z-index: 10001;
+}
+#shareBox {
+    background-color: rgb(200,200,200);
+    position: relative;
+    top: 150px;
+    left: 50px;
+    width: 400px;
+    height: 200px;
+}
+</style>
+</head>
+<body>
+<div class="navbar">
+    <img class="brand-line" src="resources/ericsson_brandline.jpg">
+    <div class="navbar-container">
+      <a href="/">
+          <img class="navbar-logo" src="resources/ECON_116px.png">
+          <span class="navbar-title">Ericsson C3</span>
+      </a>
+      <div id="homeServerBanner"></div>
+    </div>
+</div>
+<div class="contentContainer">
+<div class="about">
+    <h3>Shared Cursor example</h3>
+    This example shows how to connect two <a href="/reference/cct.Client.html"></a>
+    together through a <a href="/reference/Room.html">room</a>. Once they both have
+	joined the room, a peer-2-peer WebRTC <a href="/reference/Room.html#startCall__anchor">call</a>
+	is set up. Once the call is set up a <a href="/reference/cct.DataSource.html">DataChannel</a>
+    is created between the two clients sending their respective cursor data to eachother.
+</div>
+    <h1 id="exampleStatus">Waiting for peer to join</h1>
+    <p id="instructions"></p>
+    <div class="mouseIndicator" id="self" style="top:290px; left:240px;"><p>self</p></div>
+    <div class="mouseIndicator" id="remote" style="top:310px; left:240px;"><p>remote</p></div>
+    <div id="shareBox"></div>
+</div>
+<footer id="footer">
+    <p>
+		<span style="position: relative; left: 5vw;">&copy Ericsson 2016</span>
+	    <input type=button id="toggleLog" onClick="toggleLog()" value="show log"></input>
+    </p>
+    <div id="log" class='list-group'></div>
+</footer>
+<script>
+var client = new cct.Client()
+var sessionId
+
+var xPos = 0
+var yPos = 0
+var user = (100000 + Math.floor(Math.random() * 100000)).toString()
+var cssCoordinates
+var window = document.documentElement
+var shareBoxTop, shareBoxHeight, shareBoxLeft, shareBoxWidth
+
+window.onresize = makeConstantsFromCss
+
+function makeConstantsFromCss() {
+  var el = document.getElementById('shareBox')
+  var el2 = document.querySelector('.contentContainer')
+
+  shareBoxTop = el.offsetTop
+  shareBoxHeight = el.offsetHeight
+  shareBoxLeft = el.offsetLeft + el2.offsetLeft
+  shareBoxWidth = el.offsetWidth
+}
+
+cct.Auth.anonymous({serverUrl: getCctAddress()})
+  .then(client.auth)
+  .then(function (client) {
+    return setupUser()
+      .then(function () {
+        generate()
+        return setupRoom()
+      })
+      .then(function (room, peer) {
+        room.setJoinRule = 'open'
+        window.location.hash = room.alias
+        setupListeners(room)
+      })
+  }).catch(function (error) {
+    cct.log.error('error', error)
+    logError('Something went wrong')
+  })
+
+function setupUser() {
+  return Promise.all([
+    client.setName(client.user.id),
+    client.setStatus({status: 'Ready to roll'}),
+  ])
+}
+
+function generate() {
+  var hash = window.location.hash
+  if (hash) {
+    sessionId = hash
+    console.log('Assigned sessionId:', sessionId)
+  } else {
+    sessionId = generateID()
+    document.getElementById('instructions').textContent = 'Send your URL to a friend.'
+    console.log('generated sessionId:', sessionId)
+  }
+}
+
+function generateID() {
+  var str = ''
+  var max = 10
+  for (var i = 0; i < 20; i += 1) {
+    str += Math.floor(Math.random() * max).toString()
+  }
+  return str
+}
+
+function setupRoom() {
+  return client.fetchRoomByAlias(sessionId)
+    .then(function (room) {
+      console.log('Joining a room with id ', sessionId)
+      return room.join()
+    }, function () {
+      console.log('Creating a room with id ', sessionId)
+      return client.createRoom({
+        joinRule: 'open',
+        alias: sessionId,
+      })
+    })
+}
+
+function setupListeners(room) {
+  room.on('join', function (user) {
+    console.log('User joined: ' + user)
+    document.getElementById('exampleStatus').textContent = 'Sharing enabled'
+    document.getElementById('instructions').textContent = 'Move your mouse inside the grey box to send cursor data.'
+    setupCall(room)
+  })
+  room.on('call', function (call) {
+    call.start()
+    document.getElementById('exampleStatus').textContent = 'Sharing enabled'
+    document.getElementById('instructions').textContent = 'Move your mouse inside the grey box to send cursor data.'
+    setupCall(room)
+  })
+}
+
+function setupDataChannel(call) {
+  var dataSource = new cct.DataSource()
+  call.setLocalSource('data', dataSource)
+  call.getRemoteSource('data').sink = dataSource
+  return dataSource.data('test')
+}
+
+function setupCall(room) {
+  log('Setup', 'Starting data sharing')
+  var members = room.otherMembers.slice()
+  members.sort(function (a, b) {
+    return b.lastActive - a.lastActive
+  })
+  var call = room.startCall(members[0])
+  var data = setupDataChannel(call)
+  bindData(data)
+}
+
+function bindData(data) {
+  data.on('update', function (value) {
+    if (value.value.indexOf(user) < 0) {
+      document.getElementById('remote').style = value.value
+    }
+  })
+  document.captureEvents(Event.MOUSEMOVE)
+  document.onmousemove = updateCoordinates
+  makeConstantsFromCss()
+  function updateCoordinates(e) {
+    if (e.pageX !== xPos || e.pageY !== yPos) {
+      var isWithinX = e.pageX < shareBoxLeft + shareBoxWidth && e.pageX > shareBoxLeft
+      var isWithinY = e.pageY < shareBoxTop + shareBoxHeight + 60 && e.pageY > shareBoxTop + 75
+      if (isWithinX && isWithinY) {
+        xPos = e.pageX - 10
+        yPos = e.pageY - shareBoxTop + shareBoxHeight - 70
+        cssCoordinates = 'top:' + yPos + 'px; left:' + xPos + 'px;'
+        document.getElementById('self').style = cssCoordinates
+        cssCoordinates = 'top:' + (yPos - 35) + 'px; left:' + xPos + 'px;'
+        data.set('update', cssCoordinates + user)
+      }
+    }
+  }
+}
+
+</script>
+</body>
+</html>

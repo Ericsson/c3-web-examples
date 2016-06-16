@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>proxyStream</title>
+<link rel="stylesheet" type="text/css" href="resources/main.css">
+<link rel="icon" href="resources/favicon.ico">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/3.2.1/es6-promise.min.js"></script>
+<script type="text/javascript" src="../cct.js"></script>
+<script type="text/javascript" src="exampleUtils.js"></script>
+</head>
+<body>
+<div class="navbar">
+    <img class="brand-line" src="resources/ericsson_brandline.jpg">
+    <div class="navbar-container">
+      <a href="/">
+          <img class="navbar-logo" src="resources/ECON_116px.png">
+          <span class="navbar-title">Ericsson C3</span>
+      </a>
+      <div id="homeServerBanner"></div>
+    </div>
+</div>
+<div class="contentContainer">
+<video id="videoSink" autoplay></video>
+</div>
+<footer id="footer">
+    <p>
+		<span style="position: relative; left: 5vw;">&copy Ericsson 2016</span>
+	    <input type=button id="toggleLog" onClick="toggleLog()" value="show log"></input>
+    </p>
+    <div id="log" class='list-group'></div>
+</footer>
+<script type="text/javascript">
+var videoSink = document.getElementById('videoSink')
+
+cct.log.setLogLevel(cct.log.ALL)
+cct.log.setLogLevel('events', cct.log.NONE)
+cct.log.setLogLevel('own-events', cct.log.NONE)
+cct.log.color = true
+
+var client1 = new cct.Client({
+  iceServers: EXAMPLE_UTILS_ICE_SERVERS,
+})
+var client2 = new cct.Client({
+  iceServers: EXAMPLE_UTILS_ICE_SERVERS,
+})
+
+Promise.all([
+  cct.Auth.anonymous({serverUrl: getCctAddress()}).then(client1.auth),
+  cct.Auth.anonymous({serverUrl: getCctAddress()}).then(client2.auth),
+])
+.then(joinCallRoom)
+.then(setupCall)
+.catch(function (error) {
+  cct.log.error('error', error)
+  logError('Failed to setup proxy stream')
+})
+
+function joinCallRoom() {
+  cct.log.info('Setup', 'Joining the same room')
+  return Promise.all([
+    client1.createRoom({
+      invite: client2.user,
+    }),
+    client2.once('invite').then(function (room) {
+      return room.join()
+    }),
+  ])
+}
+
+var source
+var call1
+var call2
+
+function setupCall(rooms) {
+  source = new cct.ProxySource()
+
+  logEvent('A room', rooms[0], 'event')
+  logEvent('B room', rooms[1], 'event')
+
+  logEvent('A client', client1, 'event')
+  logEvent('B client', client2, 'event')
+
+  cct.log.info('Setup', 'Both clients in same room, initiating call')
+
+  call1 = rooms[0].startCall(client2.user)
+  call2 = rooms[1].startCall(client1.user)
+
+  logEvent('A Side', call1, 'end')
+  logEvent('A Side', call1, 'connected')
+  logEvent('B Side', call2, 'end')
+  logEvent('B Side', call2, 'connected')
+
+  call1.setLocalSource('main', source)
+  call2.getRemoteSource('main').sink = videoSink
+
+  var peerConnection = new window.RTCPeerConnection({
+    iceServers: [],
+  })
+  peerConnection.onicecandidate = function (event) {
+    source.addCandidate(event.candidate)
+  }
+
+  var mediaSource = new cct.DeviceSource()
+  mediaSource.once('stream', function (stream) {
+    log('stream', 'have stream ' + stream)
+    peerConnection.addStream(stream)
+    peerConnection.createOffer(function (offer) {
+      peerConnection.setLocalDescription(offer, function () {
+        source.setOffer(peerConnection.localDescription)
+      }, logError)
+    }, logError)
+  })
+
+  source.on('candidate', function (candidate) {
+    peerConnection.addIceCandidate(new RTCIceCandidate(candidate), function () {
+      log('candidate', candidate.candidate)
+    }, logError)
+  })
+
+  source.on('answer', function (answer) {
+    peerConnection.setRemoteDescription(new RTCSessionDescription(answer), function () {
+      log('answer', answer.sdp)
+    }, logError)
+  })
+
+  videoSink.onclick = function () {
+    if (call1.localSources.main) {
+      call1.localSources.main = null
+    } else {
+      call1.localSources.main = source
+    }
+  }
+}
+
+function logEvent(label, obj, event) {
+  obj.on(event, function () {
+    label = label + ' ! ' + event
+    try {
+      log(label, JSON.stringify(arguments))
+    } catch (e) {
+      var args = Array.prototype.slice.call(arguments)
+      log(label, args)
+    }
+  })
+}
+
+</script>
+</body>
+</html>

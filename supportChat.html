@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Support Chat</title>
+<meta charset="UTF-8">
+<link rel="stylesheet" type="text/css" href="resources/main.css">
+<link rel="icon" href="resources/favicon.ico">
+<script type="text/javascript" src="../cct.js"></script>
+<script type="text/javascript" src="exampleUtils.js"></script>
+
+<style>
+#userProRelStatus {
+    margin: 20px;
+}
+#chatContainer {
+    width: 50vw;
+    margin: 20px;
+}
+#chatDiv {
+    height: 300px;
+    font-size: 1.0em;
+    background-color: rgba(255,255,255,0.9);
+    box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.2);
+    margin-bottom: 10px;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    padding-top: 0.2em;
+    bottom: 245px;
+    overflow-y: scroll;
+    word-wrap: break-word;
+    position: static;
+}
+#chatTxt {
+    width: calc(50vw - 125px);
+}
+#chatBut {
+    position: static;
+    bottom: 245px;
+    height: 34px;
+    font-size: 0.9em;
+}
+#isTyping {
+    position: relative;
+    bottom: 0px;
+    top: -41px;
+    left: 0px;
+    height: 0;
+    width: calc(100% + 16px);
+
+}
+#isTyping > p {
+    text-align: center;
+    margin: 0px;
+    padding: 5px;
+    width: calc(100% - 40px);
+    background-color: rgba(255,250,50,0.6);
+}
+#liveInputFeed {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 2px;
+    padding-left: 5px;
+    padding-right: 5px;
+    max-width: calc(100% - 60px);
+    border: 1px solid rgba(145,145,145,0.8);
+    -webkit-box-shadow: 2px 2px 0px 0px rgba(0,0,0,0.1);
+    -moz-box-shadow: 2px 2px 0px 0px rgba(0,0,0,0.1);
+    box-shadow: 2px 2px 0px 0px rgba(0,0,0,0.1);
+    border-radius: 4px;
+    position: static;
+    background-color: rgba(255,250,50,0.6);
+}
+.chatMessage {
+    margin-top: 6px;
+}
+.selfMessage {
+    text-align: right;
+}
+.chatMessage > div {
+    display: inline-block;
+    padding: 2px;
+    /*padding-left: 5px;*/
+    padding-right: 5px;
+    max-width: calc(100% - 60px);
+    border: 1px solid rgba(145,145,145,0.8);
+    -webkit-box-shadow: 2px 2px 0px 0px rgba(0,0,0,0.1);
+    -moz-box-shadow: 2px 2px 0px 0px rgba(0,0,0,0.1);
+    box-shadow: 2px 2px 0px 0px rgba(0,0,0,0.1);
+    border-radius: 4px;
+    position: static;
+}
+.selfMessage > div {
+    background-color: rgba(178,229,255,0.6);
+}
+.remoteMessage > div {
+    background-color: rgba(226,226,226,0.6);
+}
+.margin {
+    height: 40px;
+}
+#linkContainer {
+    margin: 20px;
+}
+input {
+    font-size: 0.9em;
+}
+</style>
+
+</head>
+<body>
+<div class="navbar">
+    <img class="brand-line" src="resources/ericsson_brandline.jpg">
+    <div class="navbar-container">
+      <a href="/">
+          <img class="navbar-logo" src="resources/ECON_116px.png">
+          <span class="navbar-title">Ericsson C3</span>
+      </a>
+      <div id="homeServerBanner"></div>
+    </div>
+</div>
+
+<div class="contentContainer">
+    <div class="about">
+        <h3>Support Chat example</h3>
+        <p>
+            This example shows how to connect two <a href="/reference/cct.Client.html">clients</a>
+            together through a <a href="/reference/Room.html">room</a>. A random
+            id for the room is generated and used to create a unique URL.
+        </p>
+        <p>
+            Once both have joined the room, a chat and a data channel is set up
+            to send custumer input field live to support person.
+        </p>
+    </div>
+
+    <div id="linkContainer">
+        <div><p>Send link to a friend</p></div>
+        <input id="link" type="text" value="" size="55">
+    </div>
+    <h2 id="userProRelStatus"></h2>
+    <div id="chatContainer">
+        <div id="chatDiv">
+            <label>Chat window</label>
+            <div id="chatMessages"></div>
+            <div id="liveInputFeed" style="display: none;"></div>
+            <div class="margin"></div>
+        </div>
+        <div id="isTyping" style="display: none;">
+            <p>Other person is writing</p>
+        </div>
+
+        <div>
+            <input type="sendtext" id="chatText" placeholder="Type here" oninput="inputObserver()">
+            <input type="button" class="button" id="chatButton" value="Send">
+        </div>
+    </div>
+</div>
+
+<footer id="footer">
+    <p>
+        <span style="position: relative; left: 5vw;">&copy ERICSSON 2016</span>
+        <input type=button id="toggleLog" onClick="toggleLog()" value="show log"></input>
+    </p>
+    <div id="log" class='listGroup'></div>
+</footer>
+<script>
+cct.log.setLogLevel(cct.log.ALL)
+cct.log.color = true
+
+var client = new cct.Client()
+var isSupport = false
+
+var isAtVeryBottom = false
+
+var chatText = document.getElementById('chatText')
+var chatButton = document.getElementById('chatButton')
+var chatDiv = document.getElementById('chatMessages')
+
+var peer = new Peer2Peer({
+  session: window.location.hash,
+  client: client,
+})
+peer.start()
+  .then(function () { document.getElementById('link').value = window.location.href })
+  .then(setSupportPerson)
+  .then(prepareChat)
+  .then(setupListeners)
+  .then(function () { peer.room.send(peer.client.user.id + ' has connected') })
+  .catch(function (error) {
+    console.log(error)
+    logError('Failed to setup call')
+  })
+
+function setSupportPerson() {
+  if (peer.room.state('m.room.create').get().creator === client.user.id) {
+    isSupport = true
+    document.getElementById('userProRelStatus').textContent = 'Showing as: Support person'
+  } else {
+    isSupport = false
+    document.getElementById('userProRelStatus').textContent = 'Showing as: Customer'
+  }
+}
+
+function prepareChat(room) {
+  chatText.onkeyup = function (event) {
+    if (event.keyCode === 13) {
+      chatButton.click()
+      inputObserver()
+    }
+  }
+  chatButton.onclick = function () {
+    if (chatText.value) {
+      peer.room.send(chatText.value)
+      chatText.value = ''
+      chatText.placeholder = ''
+      inputObserver()
+    }
+  }
+  return peer.room
+}
+
+function postChatMessage(msg, isOwnEvent) {
+  var messageNode = document.createElement('div')
+  var messageContent = document.createElement('div')
+  messageNode.classList.add('chatMessage')
+  messageContent.textContent = msg
+  messageNode.appendChild(messageContent)
+
+  if (isOwnEvent) {
+    messageNode.classList.add('selfMessage')
+  } else {
+    messageNode.classList.add('remoteMessage')
+  }
+
+  chatDiv.appendChild(messageNode)
+  chatDiv.scrollTop = chatDiv.scrollHeight
+}
+
+function setupListeners(room) {
+  room.on('join', function (user, redundant) {
+    console.log('User joined: ' + user)
+    setupCall(room)
+  })
+
+  room.on('event', function (event) {
+    if (event.type === 'm.room.message' && event.content.msgtype === 'm.text') {
+      var objDiv = document.getElementById('chatDiv')
+      if (parseInt(objDiv.scrollTop) + 303 === parseInt(objDiv.scrollHeight)) {
+        isAtVeryBottom = true
+      }
+      postChatMessage(event.content.body, event.isOwnEvent)
+      if (isAtVeryBottom) {
+        objDiv.scrollTop = objDiv.scrollHeight
+      }
+      isAtVeryBottom = false
+    }
+  })
+
+  room.on('call', function (call) {
+    call.start()
+    setupCall(room)
+  })
+}
+
+function setupCall(room) {
+  log('Setup', 'Starting data sharing')
+  var members = room.otherMembers.slice()
+  members.sort(function (a, b) {
+    return b.lastActive - a.lastActive
+  })
+  var call = room.startCall(members[0])
+  var data = setupCallData(call)
+  dataChannel = data
+  bindData(data)
+}
+
+function setupCallData(call) {
+  var dataSource = new cct.DataSource()
+  call.setLocalSource('data', dataSource)
+  call.getRemoteSource('data').sink = dataSource
+  return dataSource.data('supportChatData')
+}
+
+var dataChannel
+function bindData() {
+  dataChannel.on('update', function (event) {
+    if (event.value.userId !== client.user.id) {
+      if (isSupport) {
+        if (event.value.text === '') {
+          document.getElementById('liveInputFeed').style = 'display: none;'
+        } else {
+          var objDiv = document.getElementById('chatDiv')
+          if (parseInt(objDiv.scrollTop) + 303 === parseInt(objDiv.scrollHeight)) {
+            isAtVeryBottom = true
+          }
+          document.getElementById('liveInputFeed').textContent = event.value.text
+          document.getElementById('liveInputFeed').style = 'display: block;'
+          if (isAtVeryBottom) {
+            objDiv.scrollTop = objDiv.scrollHeight
+          }
+          isAtVeryBottom = false
+        }
+      }
+      if (event.value.text === '') {
+        document.getElementById('isTyping').style = 'display: none;'
+      } else {
+        document.getElementById('isTyping').style = 'display: block;'
+      }
+    }
+  })
+}
+
+function inputObserver() {
+  dataChannel.set('update', {userId: client.user.id, text: document.getElementById('chatText').value})
+}
+
+</script>
+</body>
+</html>

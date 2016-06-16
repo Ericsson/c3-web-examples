@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>fileDropShare</title>
+<link rel="stylesheet" type="text/css" href="resources/main.css">
+<link rel="icon" href="resources/favicon.ico">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/3.2.1/es6-promise.min.js"></script>
+<script type="text/javascript" src="../cct.js"></script>
+<script type="text/javascript" src="exampleUtils.js"></script>
+</head>
+<style type="text/css">
+.container {
+    display: flex;
+    flex-direction: row;
+}
+#dropArea {
+    height: 40vh;
+    width: 50vw;
+    margin: 0 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+#dropInput {
+    border-style: dotted;
+    border-radius: 20%;
+    border-width: 3px;
+    padding: 0px;
+    margin: 0px;
+    height: 100%;
+    width: 100%;
+    cursor: default;
+}
+#isConnected {
+    color: rgba(255, 0, 0, 0.5);
+}
+#content {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+}
+#content span {
+    margin: auto;
+    margin-bottom: 10px;
+}
+#progress > div {
+  display: flex;
+  flex-direction: row;
+}
+</style>
+<body>
+<div class="navbar">
+    <img class="brand-line" src="resources/ericsson_brandline.jpg">
+    <div class="navbar-container">
+      <a href="/">
+          <img class="navbar-logo" src="resources/ECON_116px.png">
+          <span class="navbar-title">Ericsson C3</span>
+      </a>
+      <div id="homeServerBanner"></div>
+    </div>
+</div>
+<div class="contentContainer">
+    <div class="container">
+        <div class="about">
+        	<h3>File Sharing example</h3>
+        	<p>
+        		This example shows how to transfer files between two remotely connected <a href="/reference/cct.Client.html"><code>Clients</code></a>
+        		using the <a href="/reference/cct.FileRef.html"><code>FileRef</code></a> API.
+                Drag and drop a file in the image drop when you are connected to a peer to transfer a file.
+                When the transfer is finished, then the image will be displayed on the peer's screen.
+        		Open the 'log' window in the bottom right corner to see more details.
+        	</p>
+        </div>
+        <div id="linkContainer">
+            <div><p>Send link to a friend</p></div>
+            <input id="link" type="text" value="" size="55" readonly>
+            <p id="isConnected">disconnected</p>
+            <div id="progress">
+                <div>
+                  <span>Filename:  &nbsp;</span>
+                  <span id="filename"></span>
+                </div>
+                <div>
+                  <span>Progress: &nbsp;</span>
+                  <progress value='0' max='1' id="prog">Progress: </progress>
+                </div>
+                <div>
+                  <span>Download link: &nbsp;</span>
+                  <a id="downloadLink"></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div id="dropArea">
+            <span>Image drop</span>
+            <input type="file hidden" id="dropInput" multiple readonly />
+        </div>
+        <div id="content">
+            <span> Last image sent: </span>
+            <img id='img'></img>
+        </div>
+    </div>
+</div>
+<footer id="footer">
+    <p>
+		<span style="position: relative; left: 5vw;">&copy Ericsson 2016</span>
+	    <input type=button id="toggleLog" onClick="toggleLog()" value="show log"></input>
+    </p>
+    <div id="log" class='list-group'></div>
+</footer>
+<script type="text/javascript">
+cct.log.setLogLevel(cct.log.ALL)
+cct.log.color = true
+
+var progressBar = document.getElementById('prog')
+var droppedFiles
+
+var client = new cct.Client()
+var peer = new Peer2Peer({
+  session: window.location.hash,
+  client: client,
+})
+
+function preCallDrop(e) {
+  e.preventDefault()
+  droppedFiles = e.dataTransfer.files
+  var fileName = document.getElementById('filename')
+  fileName.textContent = droppedFiles[droppedFiles.length - 1].name
+}
+
+document.body.addEventListener('drop', preCallDrop, false)
+/* needed so that FF doesn't become confused */
+document.body.addEventListener('dragover', function (e) {
+  e.preventDefault()
+}, false)
+
+peer.start()
+    .then(setupListeners)
+    .then(function () {
+      document.getElementById('link').value = window.location.href
+    })
+    .catch(function (error) {
+      cct.log.error('error', error)
+      logError('Something went wrong')
+    })
+
+function connect() {
+  var conn = document.getElementById('isConnected')
+  conn.textContent = 'Connected'
+  conn.style.color = 'rgba(0,255,0,0.5)'
+}
+
+function setupListeners(room) {
+  peer.room.on('join', function (user) {
+    console.log('User joined: ' + user)
+    connect()
+    setupCall()
+  })
+
+  peer.room.on('call', function (call) {
+    call.start()
+    connect()
+    var data = setupCallData(call)
+    bindData(data)
+  })
+}
+
+function setupCall() {
+  log('Setup', 'Starting data sharing')
+  var call = peer.setupCall()
+  var data = setupCallData(call)
+  bindData(data)
+}
+
+function setupCallData(call) {
+  var dataSource = new cct.DataSource()
+  call.setLocalSource('data', dataSource)
+  call.getRemoteSource('data').sink = dataSource
+  return dataSource.data('files')
+}
+
+function bindData(data) {
+  if (droppedFiles) {
+    handleFiles(droppedFiles, data)
+  }
+  document.body.removeEventListener('drop', preCallDrop, false)
+  document.body.addEventListener('drop', function (e) {
+    e.preventDefault()
+    var files = e.dataTransfer.files
+    handleFiles(files, data)
+  }, false)
+
+  setupEvents(data)
+}
+
+function setupEvents(data) {
+  data.on('update:file', function (fileRef) {
+    log('files', 'Got image FileRef ' + fileRef)
+    fileRef.fetch().then(function (file) {
+      downloadFile(file)
+    }).catch(function (error) {
+      cct.log.error('error', 'Failed to download file:', error)
+      logError('Failed to download file: ', error)
+    })
+    fileRef.on('progress', function (progress) {
+      progressBar.value = progress
+    })
+  })
+}
+
+function handleFiles(files, data) {
+  for (var i = 0; i < files.length; i += 1) {
+    var file = files[i]
+    var fileRef = cct.FileRef.fromFile(file)
+    data.set('file', fileRef)
+    fileRef.on('transfer', function (transfer) {
+      log('Transfer', 'Transfer to ' + transfer.peer.id)
+
+      transfer.on('progress', function (progress) {
+        progressBar.value = progress
+      })
+      transfer.on('done', function () {
+        log('Transfer', 'Transfer to ' + transfer.peer.id + ' completed')
+      })
+      transfer.on('error', function (error) {
+        log('Transfer', 'Transfer to ' + transfer.peer.id + ' failed: ', error)
+      })
+      transfer.on('end', function (reason) {
+        log('Transfer', 'Transfer to ' + transfer.peer.id + ' ended: ' + reason)
+      })
+    })
+  }
+}
+
+function downloadFile(file) {
+  var fileName = document.getElementById('filename')
+  fileName.textContent = file.name
+  var downloadLink = document.getElementById('downloadLink')
+  downloadLink.download = file.name
+  downloadLink.href = URL.createObjectURL(file)
+  downloadLink.textContent = 'Click to download'
+
+  var imageType = /^image\//
+  if (imageType.test(file.type)) {
+    renderImage(file)
+  } else {
+    document.getElementById('img').removeAttribute('src')
+  }
+}
+
+function renderImage(file) {
+  var img = document.getElementById('img')
+  img.file = file
+
+  var reader = new FileReader()
+  reader.onload = function (e) {
+    img.src = e.target.result
+  }
+  reader.readAsDataURL(file)
+}
+
+</script>
+</body>
+</html>

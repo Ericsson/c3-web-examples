@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>MultiClientConferenceCall</title>
+<link rel="stylesheet" type="text/css" href="resources/main.css">
+<link rel="icon" href="resources/favicon.ico">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/3.2.1/es6-promise.min.js"></script>
+<script type="text/javascript" src="../cct.js"></script>
+<script type="text/javascript" src="exampleUtils.js"></script>
+<style>
+    #videoContainer {
+        height: 80vh;
+    }
+    #bigVideo {
+        max-width: 100vw;
+    }
+    #selfVideo {
+        position: absolute;
+        z-index: 1;
+        left: 1vw;
+        bottom: 3vw;
+        max-width: 16vw;
+        max-height: 9vw;
+        border: solid white 1px;
+    }
+    #remoteVideoContainer {
+        position: absolute;
+        width: 16vw;
+        z-index: 1;
+        right: 2vw;
+        bottom: 3vw;
+        display: flex;
+        flex-direction: column;
+    }
+    #controlsContainer {
+        position: absolute;
+        left: 40%;
+        z-index: 1;
+        bottom: 3vw;
+    }
+    .remoteVideo {
+        max-width: 16vw;
+        max-height: 9vw;
+        margin-top: 1vw;
+        border: solid white 1px;
+    }
+    #link-container {
+        margin: 20px;
+    }
+</style>
+</head>
+<body>
+<div class="navbar">
+    <img class="brand-line" src="resources/ericsson_brandline.jpg">
+    <div class="navbar-container">
+      <a href="/">
+          <img class="navbar-logo" src="resources/ECON_116px.png">
+          <span class="navbar-title">Ericsson C3</span>
+      </a>
+      <div id="homeServerBanner"></div>
+    </div>
+</div>
+
+<div class="contentContainer">
+    <div class="about">
+    	<h3>Multi Client Conference Call example</h3>
+    	<p>
+    		This advanced example shows how a complete conferencing application can be built
+            using <a href="/docs/reference/ConferenceCall.html">ConferenceCall</a>,
+            <a href="/docs/reference/cct.MediaBroadcaster.html">MediaBroadcaster</a>,
+            <a href="/docs/reference/cct.MediaSwitcher.html">MediaSwitcher</a> and
+            <a href="/docs/reference/cct.AudioMeter.html">AudioMeter</a>.
+    	</p>
+    </div>
+    <div id="link-container">
+        <div><p>Send link to a friend</p></div>
+        <input id="link" type="text" value="" size="55">
+    </div>
+    <div id="videoContainer">
+        <div id="remoteVideoContainer"></div>
+        <div id="controlsContainer">
+            <button type="button" id="audioButton">Microphone: On</button>
+            <button type="button"  id="videoButton">Camera: On</button>
+        </div>
+        <video id="selfVideo" autoplay muted></video>
+        <video id="bigVideo" autoplay muted></video>
+    </div>
+</div>
+
+<footer id="footer">
+    <p>
+		<span style="position: relative; left: 5vw;">&copy Ericsson 2016</span>
+	    <input type=button id="toggleLog" onClick="toggleLog()" value="show log"></input>
+    </p>
+    <div id="log" class='list-group'></div>
+</footer>
+<script type="text/javascript">
+cct.log.setLogLevel('media-switcher', cct.log.VERBOSE)
+cct.log.setLogLevel('media-broadcaster', cct.log.VERBOSE)
+cct.log.setLogLevel('conference-call', cct.log.VERBOSE)
+
+var bigVideo = document.getElementById('bigVideo')
+var selfVideo = document.getElementById('selfVideo')
+var remoteVideoContainer = document.getElementById('remoteVideoContainer')
+var microphone
+var hdCamera
+var sdCamera
+var audioMeters = {}
+var client
+var room
+var videoBroadcaster
+var audioBroadcaster
+var switcher
+
+cct.webRtcReady()
+  .then(getHDCamera)
+  .then(getSDCamera)
+  .then(getMicrophone)
+  .then(createClient)
+  .then(setLink)
+  .then(setupConference)
+  .then(setupSwitcher)
+  .then(function (conference) {
+    if (window.webrtcDetectedType === 'webkit') {
+      return setupVideoBroadcaster(conference)
+    } else {
+      return conference
+    }
+  })
+  .then(setupAudioBroadcaster)
+  .then(setupButtonListeners)
+  .catch(function (err) {
+    log('setup', err)
+  })
+
+function getHDCamera() {
+  log('setup', 'setting up HD camera')
+  hdCamera = new cct.DeviceSource({
+    video: {
+      aspectRatio: 16 / 9,
+    },
+  })
+  return hdCamera.promise
+}
+
+function getSDCamera() {
+  log('setup', 'setting up SD camera')
+  sdCamera = new cct.DeviceSource({
+    video: {
+      width: {
+        max: 120,
+      },
+      height: {
+        max: 90,
+      },
+      aspectRatio: 16 / 9,
+    },
+  })
+  return sdCamera.promise
+}
+
+function getMicrophone() {
+  log('setup', 'setting up microphone')
+  microphone = new cct.DeviceSource({
+    audio: true,
+  })
+  return microphone.promise
+}
+
+function createClient() {
+  log('setup', 'setting up client')
+  client = new cct.Client({
+    iceServers: EXAMPLE_UTILS_ICE_SERVERS,
+  })
+  var p2p = new Peer2Peer({
+    client: client,
+  })
+  return p2p.start()
+}
+
+function setLink(ret) {
+  document.getElementById('link').value = window.location.href
+  return ret
+}
+
+function setupConference(p2p) {
+  log('setup', 'setting up conference')
+  room = p2p.room
+  return Promise.resolve(room.startConferenceCall())
+}
+
+function setupSwitcher(conference) {
+  log('setup', 'setting up switcher')
+  switcher = new cct.MediaSwitcher()
+  switcher.source = hdCamera
+  switcher.sink = bigVideo
+  conference.attach('videoSwitch', switcher)
+  addAudioMeter(conference._userId, microphone)
+  startVoiceSwitching(switcher, conference._userId)
+  switcher.on('switch', function (newActive) {
+    log('switcher', 'Switched to ' + newActive)
+  })
+  return Promise.resolve(conference)
+}
+
+function setupAudioBroadcaster(conference) {
+  log('setup', 'setting up audio broadcast')
+  audioBroadcaster = new cct.MediaBroadcaster()
+  audioBroadcaster.source = microphone
+  conference.attach('audioBroadcast', audioBroadcaster)
+
+  audioBroadcaster.on('remoteSource', function (evt) {
+    var peer = evt.peer
+    var source = evt.source
+    source.on('stream', function (stream) {
+      if (stream === null) {
+        removeRemoteAudioElement(peer)
+        removeAudioMeter(peer)
+      } else {
+        addRemoteAudioElement(peer, source)
+        addAudioMeter(peer, source)
+      }
+    })
+  })
+
+  return Promise.resolve(conference)
+}
+
+function setupVideoBroadcaster(conference) {
+  log('setup', 'setting up video broadcast')
+  videoBroadcaster = new cct.MediaBroadcaster()
+  videoBroadcaster.source = sdCamera
+  videoBroadcaster.source.sink = selfVideo
+  conference.attach('videoBroadcast', videoBroadcaster)
+
+  videoBroadcaster.on('remoteSource', function (evt) {
+    var peer = evt.peer
+    var source = evt.source
+    source.on('stream', function (stream) {
+      if (stream === null) {
+        removeRemoteVideoElement(peer)
+      } else {
+        addRemoteVideoElement(peer, source)
+      }
+    })
+  })
+
+  return Promise.resolve(conference)
+}
+
+function setupButtonListeners() {
+  log('setup', 'setting up button listeners')
+  var audioButton = document.getElementById('audioButton')
+  var videoButton = document.getElementById('videoButton')
+
+  audioButton.onclick = function () {
+    microphone.mute.audio = !microphone.mute.audio
+    audioButton.innerText = microphone.mute.audio ? 'Microphone: Off' : 'Microphone: On'
+  }
+  videoButton.onclick = function () {
+    hdCamera.mute.video = !hdCamera.mute.video
+    sdCamera.mute.video = !sdCamera.mute.video
+    videoButton.innerText = hdCamera.mute.video ? 'Camera: Off' : 'Camera: On'
+  }
+}
+
+function startVoiceSwitching(switcher, selfId) {
+  setInterval(function () {
+    var king = switcher.liveMembers.concat().sort()[0]
+    if (king === selfId) {
+      var loudestPeer
+      var loudestLevel = 0
+      for (var peer in audioMeters) {
+        var peerLevel = audioMeters[peer].filtered
+        if (peerLevel > loudestLevel) {
+          loudestLevel = peerLevel
+          loudestPeer = peer
+        }
+      }
+      switcher.setActive(loudestPeer)
+    }
+  }, 5000)
+}
+
+function addAudioMeter(peer, source) {
+  var meter = audioMeters[peer] || new cct.AudioMeter()
+  meter.source = source
+  audioMeters[peer] = meter
+}
+
+function removeAudioMeter(peer) {
+  var meter = audioMeters[peer]
+  if (meter) {
+    meter.stop()
+    delete audioMeters[peer]
+  }
+}
+
+function addRemoteVideoElement(peer, source) {
+  var videoId = 'video:' + peer
+  var videoEl = document.getElementById(videoId)
+  if (!videoEl) {
+    videoEl = document.createElement('video')
+    videoEl.id = videoId
+    videoEl.autoplay = true
+    videoEl.className = 'remoteVideo'
+    remoteVideoContainer.appendChild(videoEl)
+  }
+  source.sink = videoEl
+}
+
+function removeRemoteVideoElement(peer) {
+  var videoEl = document.getElementById('video:' + peer)
+  remoteVideoContainer.removeChild(videoEl)
+}
+
+function addRemoteAudioElement(peer, source) {
+  var audioId = 'audio:' + peer
+  var audioEl = document.getElementById(audioId)
+  if (!audioEl) {
+    audioEl = document.createElement('audio')
+    audioEl.id = audioId
+    audioEl.autoplay = true
+    document.body.appendChild(audioEl)
+  }
+  source.sink = audioEl
+}
+
+function removeRemoteAudioElement(peer) {
+  var audioEl = document.getElementById('audio:' + peer)
+  document.body.removeChild(audioEl)
+}
+
+</script>
+</body>
+</html>

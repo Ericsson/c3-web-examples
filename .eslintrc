@@ -1,0 +1,24 @@
+
+{
+  "plugins": [
+    "html"
+  ],
+
+  "globals": {
+    "cct": false,
+    "EXAMPLE_UTILS_ICE_SERVERS": false,
+    "Peer2Peer": false,
+    "toggleLog": false,
+    "clientsInARoom": false,
+    "logP": false,
+    "logPE": false,
+    "log": false,
+    "logError": false,
+    "getCctAddress": false
+  },
+
+  "settings": {
+      "html/indent": [2, "0"],
+      "html/report-bad-indent": true
+  },
+}

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register users</title>
+	<link rel="stylesheet" type="text/css" href="resources/main.css">
+	<link rel="icon" href="resources/favicon.ico">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/3.2.1/es6-promise.min.js"></script>
+    <script type="text/javascript" src="../cct.js"></script>
+    <script type="text/javascript" src="exampleUtils.js"></script>
+    <style type="text/css">
+        input {
+            height: 24px;
+            width: 220px;
+            max-width: 80%;
+        }
+        button {
+            margin-left: 156px;
+            margin-top: 10px;
+        }
+        label {
+            width: 150px;
+            margin-top: 3px;
+            float: left;
+        }
+    </style>
+<script type="text/javascript">
+cct.log.setLogLevel(cct.log.ALL)
+cct.log.setLogLevel('events', cct.log.NONE)
+cct.log.setLogLevel('own-events', cct.log.NONE)
+cct.log.color = true
+
+function register(e) {
+  if (e.preventDefault) {
+    e.preventDefault()
+  }
+
+  log('Register', 'Checking input')
+  var username = document.getElementById('username').value
+  var display_name = document.getElementById('display-name').value
+  var password = document.getElementById('password').value
+  var secret = document.getElementById('secret').value
+
+  /*
+  * @param {string} options.serverUrl - The absolute url of the home server.
+  * @param {string} options.username - Username
+  * @param {string} options.password - Password
+  * @param {string} [options.secret] - Shared registration secret
+  */
+  var options = {
+    serverUrl: getCctAddress(),
+    username: username,
+    password: password,
+  }
+  if (secret !== '') {
+    options.secret = secret
+  }
+
+  log('Register', 'About to register user')
+  log('Register', options)
+
+  cct.Auth.registerWithPassword(options).then(function (info) {
+    cct.log.info(info)
+    log('Register', 'Successfully registered user with id: ' + info.userId)
+
+    log('Client', 'Signing in user')
+    var client = new cct.Client()
+    client.auth(info).then(function () {
+      log('Client', 'Setting name')
+      client.setName(display_name)
+      log('Client', 'Name set to ' + display_name)
+      document.getElementById('status').innerText = 'User registered. BOOM.'
+    }).catch(function (error) {
+      log('Error', error)
+    })
+  }).catch(function (error) {
+    cct.log.error('error', error)
+    logError('Failed to register user')
+  })
+
+  return false
+}
+
+window.onload = function () {
+  var form = document.getElementById('reg-form')
+  if (form.attachEvent) {
+    form.attachEvent('submit', register)
+  } else {
+    form.addEventListener('submit', register)
+  }
+}
+
+</script>
+</head>
+<body>
+<div class="navbar">
+    <img class="brand-line" src="resources/ericsson_brandline.jpg">
+    <div class="navbar-container">
+      <a href="/">
+          <img class="navbar-logo" src="resources/ECON_116px.png">
+          <span class="navbar-title">Ericsson C3</span>
+      </a>
+      <div id="homeServerBanner"></div>
+    </div>
+</div>
+<div class="contentContainer">
+    <div id="main">
+        <div class="about">
+            <h2>Register Users example</h2>
+            This example shows how to register new user on the server using the
+            <a href="/reference/cct.Auth.html#-static-registerWithPassword__anchor"><code>cct.Auth.registerWithPassword</code></a>
+            method.
+        </div>
+        <div id="register">
+            <form id="reg-form">
+                <ul>
+                    <li>
+                        <label>Display Name</label><input id="display-name" type="text" required>
+                    </li>
+                    <li>
+                        <label>Username</label><input id="username" type="text" required>
+                    </li>
+                    <li>
+                        <label>Password</label><input id="password" type="password" required>
+                    </li>
+                    <li>
+                        <label><i>Shared Secret</i></label><input id="secret" type="text" placeholder="Optional">
+                    </li>
+                    <li>
+                        <button type="submit">Register</button>
+                    </li>
+                </ul>
+            </form>
+            <div id="status"></div>
+        </div>
+    </div>
+</div>
+<footer id="footer">
+    <p>
+		<span style="position: relative; left: 5vw;">&copy Ericsson 2016</span>
+	    <input type=button id="toggleLog" onClick="toggleLog()" value="show log"></input>
+    </p>
+    <div id="log" class='list-group'></div>
+</footer>
+</body>
+</html>

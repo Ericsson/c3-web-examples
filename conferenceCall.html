@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Conference Call</title>
+<meta charset="UTF-8">
+<link rel="stylesheet" type="text/css" href="resources/main.css">
+<link rel="icon" href="resources/favicon.ico">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/3.2.1/es6-promise.min.js"></script>
+<script type="text/javascript" src="../cct.js"></script>
+<script type="text/javascript" src="exampleUtils.js"></script>
+<style type="text/css">
+video.local {
+    height: 15%;
+    width: 10vw;
+}
+video.local.activespeaker {
+    border-style: solid;
+    border-color: red;
+    border-width: thin;
+    border-radius: 1vw;
+}
+video.remote {
+    width: 45vw;
+    height: 35vw;
+}
+.contentContainer {
+    text-align:center;
+}
+</style>
+</head>
+<body>
+<div class="navbar">
+    <img class="brand-line" src="resources/ericsson_brandline.jpg">
+    <div class="navbar-container">
+      <a href="/">
+          <img class="navbar-logo" src="resources/ECON_116px.png">
+          <span class="navbar-title">Ericsson C3</span>
+      </a>
+      <div id="homeServerBanner"></div>
+    </div>
+</div>
+<div class="contentContainer">
+    <video class="remote" muted="true" id="remote" autoplay></video>
+    <hr/>
+    <p>
+        Click one of the videos below to make that user the "active speaker".
+    </p>
+    <hr/>
+    <video class="local" muted="true" id="self1" autoplay></video>
+    <video class="local" muted="true" id="self2" autoplay></video>
+    <video class="local" muted="true" id="self3" autoplay></video>
+</div>
+<footer id="footer">
+    <p>
+		<span style="position: relative; left: 5vw;">&copy ERICSSON 2016</span>
+        <input type=button id="toggleLog" onClick="toggleLog()" value="show log"></input>
+    </p>
+    <div id="log" class='list-group'></div>
+</footer>
+
+<script type="text/javascript">
+var self1 = document.getElementById('self1')
+var self2 = document.getElementById('self2')
+var self3 = document.getElementById('self3')
+var remote = document.getElementById('remote')
+
+cct.log.setLogLevel(cct.log.ALL)
+cct.log.color = true
+
+var client1 = new cct.Client({
+  iceServers: EXAMPLE_UTILS_ICE_SERVERS,
+})
+var client2 = new cct.Client({
+  iceServers: EXAMPLE_UTILS_ICE_SERVERS,
+})
+var client3 = new cct.Client({
+  iceServers: EXAMPLE_UTILS_ICE_SERVERS,
+})
+
+Promise.all([
+  cct.Auth.anonymous({serverUrl: getCctAddress()}).then(client1.auth),
+  cct.Auth.anonymous({serverUrl: getCctAddress()}).then(client2.auth),
+  cct.Auth.anonymous({serverUrl: getCctAddress()}).then(client3.auth),
+])
+.then(joinRoom)
+.then(setupConference)
+.catch(function (error) {
+  logError('Setup', error)
+})
+
+function joinRoom() {
+  log('Setup', 'Joining the same room')
+  return Promise.all([
+    client1.createRoom({
+      invite: [client2.user, client3.user],
+    }),
+    client2.once('invite').then(function (room) {
+      return room.join()
+    }),
+    client3.once('invite').then(function (room) {
+      return room.join()
+    }),
+  ])
+}
+
+var camera1
+var camera2
+var camera3
+var conference1
+var conference2
+var conference3
+var switch1
+var switch2
+var switch3
+var broadcaster1
+var broadcaster2
+var broadcaster3
+
+function setupConference(rooms) {
+  // Create some camera sources that will be streamed between the participants.
+  camera1 = camera2 = camera3 = new cct.DeviceSource({
+    audio: false,
+    video: true,
+  })
+
+  log('Setup', 'All three clients in same room, initiating conference')
+
+  // Start the conference(s)
+  conference1 = rooms[0].startConferenceCall()
+  conference2 = rooms[1].startConferenceCall()
+  conference3 = rooms[2].startConferenceCall()
+
+  log('Setup', 'Setting up media switching')
+
+  // Create some switchers
+  switch1 = new cct.MediaSwitcher()
+  switch2 = new cct.MediaSwitcher()
+  switch3 = new cct.MediaSwitcher()
+
+  // Attach them to their respective conference
+  conference1.attach('switch', switch1)
+  conference2.attach('switch', switch2)
+  conference3.attach('switch', switch3)
+
+  // ..and set the input of each switcher
+  switch1.sink = remote
+  switch1.source = camera1
+  switch2.source = camera2
+  switch3.source = camera3
+
+  log('Setup', 'Setting up media broadcasting')
+
+  // Create some broadcasters
+  broadcaster1 = new cct.MediaBroadcaster()
+  broadcaster2 = new cct.MediaBroadcaster()
+  broadcaster3 = new cct.MediaBroadcaster()
+
+  // Attach them to their respective conference
+  conference1.attach('thumb', broadcaster1)
+  conference2.attach('thumb', broadcaster2)
+  conference3.attach('thumb', broadcaster3)
+
+  // ..and set the input of each broadcaster.
+  // this will cause the camera stream to be sent to all other participants.
+  // NOTE: Broadcasting high-res video requires a LOT of CPU and bandwidth, especially for larger conferences.
+  // Consider using a DeviceSource with lower resolution/framerate for the smaller videos.
+  broadcaster1.source = camera1
+  broadcaster2.source = camera2
+  broadcaster3.source = camera3
+  broadcaster1.source.sink = self1
+
+  // Listen for the other broadcasters to connect, set output accordingly.
+  broadcaster1.on('remoteSource:' + client2.user.id, function (source) {
+    log('broadcaster', 'Got a remote source from Client2')
+    source.sink = self2
+  })
+  broadcaster1.on('remoteSource:' + client3.user.id, function (source) {
+    log('broadcaster', 'Got a remote source from Client3')
+    source.sink = self3
+  })
+
+  // Listen for switching events from the switcher.
+  // Update UI to reflect who the new active speaker is.
+  switch1.on('switch', function (newActive, oldActive) {
+    log('switcher', 'Switched from ' + oldActive + ' to ' + newActive)
+    switch (oldActive) {
+      case client1.user.id:
+        self1.classList.remove('activespeaker')
+        break
+      case client2.user.id:
+        self2.classList.remove('activespeaker')
+        break
+      case client3.user.id:
+        self3.classList.remove('activespeaker')
+        break
+    }
+    switch (newActive) {
+      case client1.user.id:
+        self1.classList.add('activespeaker')
+        break
+      case client2.user.id:
+        self2.classList.add('activespeaker')
+        break
+      case client3.user.id:
+        self3.classList.add('activespeaker')
+        break
+    }
+  })
+
+  // Click a thumbnail video to switch the active speaker.
+  self1.onclick = function () {
+    switch1.setActive() // Set client1 to active
+  }
+  self2.onclick = function () {
+    switch1.setActive(client2.user.id) // Set client2 to active
+  }
+  self3.onclick = function () {
+    switch3.setActive() // Set client3 to active.
+  }
+
+  switch1.setActive()
+}
+
+</script>
+</body>
+</html>
