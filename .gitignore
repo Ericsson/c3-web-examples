@@ -4,3 +4,4 @@ node_modules/
 dist/
 .tmp/
 .babel_cache
+.DS_store

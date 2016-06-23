@@ -159,12 +159,14 @@ footer>p>input {
     width: 100%;
 }
 .navbar-container {
+  height: 57px;
   display: flex;
   flex-direction: row;
   align-items: flex-start;
   justify-content: center;
 }
 .navbar-container > a {
+  margin-left: 20px;
   min-width: 250px;
   align-self: center;
   display: flex;
@@ -188,7 +190,7 @@ footer>p>input {
     margin-top: auto;
 }
 .navbar-title {
-    font-family: Ericsson;
+    font-family: Ericsson, Helvetica, Arial, sans-serif;
     font-style: normal;
     font-weight: 400;
     font-size: 1.55em;
@@ -299,6 +301,7 @@ footer>p>input {
     height: auto;
     margin: 18px 0px;
     margin-left:auto;
+    margin-right: 18px;
     align-self: flex-end;
 }
 #register {
