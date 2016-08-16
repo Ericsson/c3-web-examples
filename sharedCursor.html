@@ -70,7 +70,7 @@
     This example shows how to connect two <a href="/reference/cct.Client.html"></a>
     together through a <a href="/reference/Room.html">room</a>. Once they both have
 	joined the room, a peer-2-peer WebRTC <a href="/reference/Room.html#startCall__anchor">call</a>
-	is set up. Once the call is set up a <a href="/reference/cct.DataSource.html">DataChannel</a>
+	is set up. Once the call is set up a <a href="/reference/cct.DataShare.html">DataShare</a>
     is created between the two clients sending their respective cursor data to eachother.
 </div>
     <h1 id="exampleStatus">Waiting for peer to join</h1>
@@ -185,10 +185,9 @@ function setupListeners(room) {
 }
 
 function setupDataChannel(call) {
-  var dataSource = new cct.DataSource()
-  call.setLocalSource('data', dataSource)
-  call.getRemoteSource('data').sink = dataSource
-  return dataSource.data('test')
+  var data = new cct.DataShare()
+  call.attach('data', data)
+  return data
 }
 
 function setupCall(room) {

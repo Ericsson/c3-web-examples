@@ -122,7 +122,7 @@ var remoteVideoContainer = document.getElementById('remoteVideoContainer')
 var microphone
 var hdCamera
 var sdCamera
-var audioMeters = {}
+// var audioMeters = {}
 var client
 var room
 var videoBroadcaster
@@ -130,38 +130,26 @@ var audioBroadcaster
 var switcher
 
 cct.webRtcReady()
-  .then(getHDCamera)
-  .then(getSDCamera)
-  .then(getMicrophone)
+  .then(setupMediaSources)
   .then(createClient)
   .then(setLink)
   .then(setupConference)
   .then(setupSwitcher)
-  .then(function (conference) {
-    if (window.webrtcDetectedType === 'webkit') {
-      return setupVideoBroadcaster(conference)
-    } else {
-      return conference
-    }
-  })
+  .then(setupVideoBroadcaster)
   .then(setupAudioBroadcaster)
   .then(setupButtonListeners)
   .catch(function (err) {
     log('setup', err)
+    console.error(err)
   })
 
-function getHDCamera() {
-  log('setup', 'setting up HD camera')
+function setupMediaSources() {
+  log('setup', 'setting up media sources')
   hdCamera = new cct.DeviceSource({
     video: {
       aspectRatio: 16 / 9,
     },
   })
-  return hdCamera.promise
-}
-
-function getSDCamera() {
-  log('setup', 'setting up SD camera')
   sdCamera = new cct.DeviceSource({
     video: {
       width: {
@@ -173,15 +161,14 @@ function getSDCamera() {
       aspectRatio: 16 / 9,
     },
   })
-  return sdCamera.promise
-}
-
-function getMicrophone() {
-  log('setup', 'setting up microphone')
+  sdCamera.connect(selfVideo)
+  selfVideo.onclick = function () {
+    console.log('Setting self active')
+    switcher.setActive()
+  }
   microphone = new cct.DeviceSource({
     audio: true,
   })
-  return microphone.promise
 }
 
 function createClient() {
@@ -203,18 +190,18 @@ function setLink(ret) {
 function setupConference(p2p) {
   log('setup', 'setting up conference')
   room = p2p.room
-  return Promise.resolve(room.startConferenceCall())
+  return Promise.resolve(room.startConference())
 }
 
 function setupSwitcher(conference) {
   log('setup', 'setting up switcher')
   switcher = new cct.MediaSwitcher()
-  switcher.source = hdCamera
-  switcher.sink = bigVideo
+  hdCamera.connect(switcher)
+  switcher.connect(bigVideo)
   conference.attach('videoSwitch', switcher)
-  addAudioMeter(conference._userId, microphone)
-  startVoiceSwitching(switcher, conference._userId)
-  switcher.on('switch', function (newActive) {
+  // addAudioMeter(conference._userId, microphone)
+  // startVoiceSwitching(switcher, conference._userId)
+  switcher.on('activeSpeaker', function (newActive) {
     log('switcher', 'Switched to ' + newActive)
   })
   return Promise.resolve(conference)
@@ -223,21 +210,17 @@ function setupSwitcher(conference) {
 function setupAudioBroadcaster(conference) {
   log('setup', 'setting up audio broadcast')
   audioBroadcaster = new cct.MediaBroadcaster()
-  audioBroadcaster.source = microphone
+  microphone.connect(audioBroadcaster)
   conference.attach('audioBroadcast', audioBroadcaster)
 
-  audioBroadcaster.on('remoteSource', function (evt) {
-    var peer = evt.peer
-    var source = evt.source
-    source.on('stream', function (stream) {
-      if (stream === null) {
-        removeRemoteAudioElement(peer)
-        removeAudioMeter(peer)
-      } else {
-        addRemoteAudioElement(peer, source)
-        addAudioMeter(peer, source)
-      }
-    })
+  audioBroadcaster.on('remoteSource', function (event) {
+    var peer = event.peer
+    var source = event.source
+    if (event.source) {
+      addRemoteAudioElement(peer, source)
+    } else {
+      removeRemoteAudioElement(peer)
+    }
   })
 
   return Promise.resolve(conference)
@@ -246,20 +229,17 @@ function setupAudioBroadcaster(conference) {
 function setupVideoBroadcaster(conference) {
   log('setup', 'setting up video broadcast')
   videoBroadcaster = new cct.MediaBroadcaster()
-  videoBroadcaster.source = sdCamera
-  videoBroadcaster.source.sink = selfVideo
+  sdCamera.connect(videoBroadcaster)
   conference.attach('videoBroadcast', videoBroadcaster)
 
-  videoBroadcaster.on('remoteSource', function (evt) {
-    var peer = evt.peer
-    var source = evt.source
-    source.on('stream', function (stream) {
-      if (stream === null) {
-        removeRemoteVideoElement(peer)
-      } else {
-        addRemoteVideoElement(peer, source)
-      }
-    })
+  videoBroadcaster.on('remoteSource', function (event) {
+    var peer = event.peer
+    var source = event.source
+    if (event.source) {
+      addRemoteVideoElement(peer, source)
+    } else {
+      removeRemoteVideoElement(peer)
+    }
   })
 
   return Promise.resolve(conference)
@@ -280,7 +260,7 @@ function setupButtonListeners() {
     videoButton.innerText = hdCamera.mute.video ? 'Camera: Off' : 'Camera: On'
   }
 }
-
+/*
 function startVoiceSwitching(switcher, selfId) {
   setInterval(function () {
     var king = switcher.liveMembers.concat().sort()[0]
@@ -298,13 +278,13 @@ function startVoiceSwitching(switcher, selfId) {
     }
   }, 5000)
 }
-
+*//*
 function addAudioMeter(peer, source) {
   var meter = audioMeters[peer] || new cct.AudioMeter()
-  meter.source = source
+  source.connect(meter)
   audioMeters[peer] = meter
 }
-
+*//*
 function removeAudioMeter(peer) {
   var meter = audioMeters[peer]
   if (meter) {
@@ -312,7 +292,7 @@ function removeAudioMeter(peer) {
     delete audioMeters[peer]
   }
 }
-
+*/
 function addRemoteVideoElement(peer, source) {
   var videoId = 'video:' + peer
   var videoEl = document.getElementById(videoId)
@@ -321,9 +301,13 @@ function addRemoteVideoElement(peer, source) {
     videoEl.id = videoId
     videoEl.autoplay = true
     videoEl.className = 'remoteVideo'
+    videoEl.onclick = function () {
+      console.log('Setting active: ' + peer)
+      switcher.setActive(peer)
+    }
     remoteVideoContainer.appendChild(videoEl)
   }
-  source.sink = videoEl
+  source.connect(videoEl)
 }
 
 function removeRemoteVideoElement(peer) {
@@ -340,7 +324,7 @@ function addRemoteAudioElement(peer, source) {
     audioEl.autoplay = true
     document.body.appendChild(audioEl)
   }
-  source.sink = audioEl
+  source.connect(audioEl)
 }
 
 function removeRemoteAudioElement(peer) {
