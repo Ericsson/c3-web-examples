@@ -124,16 +124,16 @@ var call2
 function setupCall(rooms) {
   source1 = new cct.DeviceSource()
   source2 = new cct.DeviceSource()
-  source1.sink = self1
-  source2.sink = self2
+  source1.connect(self1)
+  source2.connect(self2)
 
   call1 = rooms[0].startCall(client2.user.id)
   call1.setLocalSource('main', source1)
-  call1.getRemoteSource('main').sink = remote1
+  call1.getRemoteSource('main').connect(remote1)
 
   call2 = rooms[1].startCall(client1.user.id)
   call2.setLocalSource('main', source2)
-  call2.getRemoteSource('main').sink = remote2
+  call2.getRemoteSource('main').connect(remote2)
 }
 
 </script>

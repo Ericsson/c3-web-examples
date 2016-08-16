@@ -291,10 +291,9 @@ function setupCall(room) {
 }
 
 function setupCallData(call) {
-  var dataSource = new cct.DataSource()
-  call.setLocalSource('data', dataSource)
-  call.getRemoteSource('data').sink = dataSource
-  return dataSource.data('supportChatData')
+  var data = new cct.DataShare()
+  call.attach('data', data)
+  return data
 }
 
 var dataChannel

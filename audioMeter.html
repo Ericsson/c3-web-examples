@@ -60,7 +60,7 @@ var microphone = new cct.DeviceSource({
   audio: true,
 })
 var audioMeter = new cct.AudioMeter()
-audioMeter.source = microphone
+microphone.connect(audioMeter)
 
 var canvas = document.getElementById('canvas')
 var ctx = canvas.getContext('2d')

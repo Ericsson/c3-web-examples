@@ -172,48 +172,35 @@ function setupListeners(room) {
   peer.room.on('join', function (user) {
     console.log('User joined: ' + user)
     connect()
-    setupCall()
+    var call = peer.setupCall()
+    setupFileSharing(call)
   })
 
   peer.room.on('call', function (call) {
     call.start()
     connect()
-    var data = setupCallData(call)
-    bindData(data)
+    setupFileSharing(call)
   })
 }
 
-function setupCall() {
+function setupFileSharing(call) {
   log('Setup', 'Starting data sharing')
-  var call = peer.setupCall()
-  var data = setupCallData(call)
-  bindData(data)
-}
+  var fileShare = new cct.FileShare()
+  call.attach('files', fileShare)
 
-function setupCallData(call) {
-  var dataSource = new cct.DataSource()
-  call.setLocalSource('data', dataSource)
-  call.getRemoteSource('data').sink = dataSource
-  return dataSource.data('files')
-}
-
-function bindData(data) {
+  // Handles files that were dropped before the call was set up
   if (droppedFiles) {
-    handleFiles(droppedFiles, data)
+    handleFiles(droppedFiles, fileShare)
   }
   document.body.removeEventListener('drop', preCallDrop, false)
   document.body.addEventListener('drop', function (e) {
     e.preventDefault()
     var files = e.dataTransfer.files
-    handleFiles(files, data)
+    handleFiles(files, fileShare)
   }, false)
 
-  setupEvents(data)
-}
-
-function setupEvents(data) {
-  data.on('update:file', function (fileRef) {
-    log('files', 'Got image FileRef ' + fileRef)
+  fileShare.on('update:file', function (fileRef) {
+    log('files', 'Got image FileRef ', fileRef.name, fileRef)
     fileRef.fetch().then(function (file) {
       downloadFile(file)
     }).catch(function (error) {
@@ -226,11 +213,11 @@ function setupEvents(data) {
   })
 }
 
-function handleFiles(files, data) {
+function handleFiles(files, fileShare) {
   for (var i = 0; i < files.length; i += 1) {
     var file = files[i]
     var fileRef = cct.FileRef.fromFile(file)
-    data.set('file', fileRef)
+    fileShare.set('file', fileRef)
     fileRef.on('transfer', function (transfer) {
       log('Transfer', 'Transfer to ' + transfer.peer.id)
 

@@ -142,9 +142,9 @@ function setupConference(rooms) {
   log('Setup', 'All three clients in same room, initiating conference')
 
   // Start the conference(s)
-  conference1 = rooms[0].startConferenceCall()
-  conference2 = rooms[1].startConferenceCall()
-  conference3 = rooms[2].startConferenceCall()
+  conference1 = rooms[0].startConference()
+  conference2 = rooms[1].startConference()
+  conference3 = rooms[2].startConference()
 
   log('Setup', 'Setting up media switching')
 
@@ -159,10 +159,10 @@ function setupConference(rooms) {
   conference3.attach('switch', switch3)
 
   // ..and set the input of each switcher
-  switch1.sink = remote
-  switch1.source = camera1
-  switch2.source = camera2
-  switch3.source = camera3
+  switch1.output.connect(remote)
+  camera1.connect(switch1)
+  camera2.connect(switch2)
+  camera3.connect(switch3)
 
   log('Setup', 'Setting up media broadcasting')
 
@@ -180,19 +180,19 @@ function setupConference(rooms) {
   // this will cause the camera stream to be sent to all other participants.
   // NOTE: Broadcasting high-res video requires a LOT of CPU and bandwidth, especially for larger conferences.
   // Consider using a DeviceSource with lower resolution/framerate for the smaller videos.
-  broadcaster1.source = camera1
-  broadcaster2.source = camera2
-  broadcaster3.source = camera3
-  broadcaster1.source.sink = self1
+  camera1.connect(broadcaster1)
+  camera2.connect(broadcaster2)
+  camera3.connect(broadcaster3)
+  camera1.connect(self1)
 
   // Listen for the other broadcasters to connect, set output accordingly.
   broadcaster1.on('remoteSource:' + client2.user.id, function (source) {
     log('broadcaster', 'Got a remote source from Client2')
-    source.sink = self2
+    source.connect(self2)
   })
   broadcaster1.on('remoteSource:' + client3.user.id, function (source) {
     log('broadcaster', 'Got a remote source from Client3')
-    source.sink = self3
+    source.connect(self3)
   })
 
   // Listen for switching events from the switcher.
