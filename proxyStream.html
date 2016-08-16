@@ -83,37 +83,29 @@ function joinCallRoom() {
   ])
 }
 
+var sink
 var source
 var call1
 var call2
 
 function setupCall(rooms) {
+  sink = new cct.ProxySink()
   source = new cct.ProxySource()
-
-  logEvent('A room', rooms[0], 'event')
-  logEvent('B room', rooms[1], 'event')
-
-  logEvent('A client', client1, 'event')
-  logEvent('B client', client2, 'event')
 
   cct.log.info('Setup', 'Both clients in same room, initiating call')
 
   call1 = rooms[0].startCall(client2.user)
   call2 = rooms[1].startCall(client1.user)
 
-  logEvent('A Side', call1, 'end')
-  logEvent('A Side', call1, 'connected')
-  logEvent('B Side', call2, 'end')
-  logEvent('B Side', call2, 'connected')
-
-  call1.setLocalSource('main', source)
-  call2.getRemoteSource('main').sink = videoSink
+  call1.attach('main', sink)
+  call2.attach('main', source)
+  source.connect(videoSink)
 
   var peerConnection = new window.RTCPeerConnection({
     iceServers: [],
   })
   peerConnection.onicecandidate = function (event) {
-    source.addCandidate(event.candidate)
+    sink.addCandidate(event.candidate)
   }
 
   var mediaSource = new cct.DeviceSource()
@@ -122,42 +114,32 @@ function setupCall(rooms) {
     peerConnection.addStream(stream)
     peerConnection.createOffer(function (offer) {
       peerConnection.setLocalDescription(offer, function () {
-        source.setOffer(peerConnection.localDescription)
+        sink.setOffer(peerConnection.localDescription)
       }, logError)
     }, logError)
   })
 
-  source.on('candidate', function (candidate) {
+  sink.on('candidate', function (candidate) {
     peerConnection.addIceCandidate(new RTCIceCandidate(candidate), function () {
       log('candidate', candidate.candidate)
     }, logError)
   })
 
-  source.on('answer', function (answer) {
+  sink.on('answer', function (answer) {
     peerConnection.setRemoteDescription(new RTCSessionDescription(answer), function () {
       log('answer', answer.sdp)
     }, logError)
   })
 
+  var added = true
   videoSink.onclick = function () {
-    if (call1.localSources.main) {
-      call1.localSources.main = null
+    if (added) {
+      call1.detach('main')
     } else {
-      call1.localSources.main = source
+      call1.attach('main', sink)
     }
+    added = !added
   }
-}
-
-function logEvent(label, obj, event) {
-  obj.on(event, function () {
-    label = label + ' ! ' + event
-    try {
-      log(label, JSON.stringify(arguments))
-    } catch (e) {
-      var args = Array.prototype.slice.call(arguments)
-      log(label, args)
-    }
-  })
 }
 
 </script>

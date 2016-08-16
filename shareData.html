@@ -41,7 +41,7 @@
 	<p>
 		This example shows how to synchronise data in an <code>input</code> field
 		between four <a href="/reference/cct.Client.html">clients</a>. Data is
-		sent via the WebRTC DataChannel, represented by the <a href="/reference/cct.DataSource.html">dataSource</a>
+		sent via the WebRTC DataChannel, represented by the <a href="/reference/cct.DataShare.html">DataShare</a>
 		API.
 	</p>
 </div>
@@ -128,10 +128,9 @@ function joinCallRoom(clients) {
 }
 
 function setupCallData(call) {
-  var dataSource = new cct.DataSource()
-  call.setLocalSource('data', dataSource)
-  call.getRemoteSource('data').sink = dataSource
-  return dataSource.data('test')
+  var data = new cct.DataShare()
+  call.attach('data', data)
+  return data
 }
 
 function startSharing(calls) {

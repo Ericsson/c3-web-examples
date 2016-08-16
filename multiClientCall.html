@@ -259,14 +259,14 @@ function startApp() {
 
   function getSelfView() {
     var source = new cct.DeviceSource()
-    source.sink = document.getElementById('selfView')
+    source.connect(document.getElementById('selfView'))
     return source
   }
 
   function setSource(call) {
     console.log('call: ', call)
     call.setLocalSource('media', getSelfView())
-    call.getRemoteSource('media').sink = document.getElementById('remoteView')
+    call.getRemoteSource('media').connect(document.getElementById('remoteView'))
   }
 
   function setupListeners(room) {
@@ -285,7 +285,7 @@ function startApp() {
     room.on('call', function (call) {
       call.start()
       call.setLocalSource('media', getSelfView())
-      call.getRemoteSource('media').sink = document.getElementById('remoteView')
+      call.getRemoteSource('media').connect(document.getElementById('remoteView'))
     })
     return room
   }
