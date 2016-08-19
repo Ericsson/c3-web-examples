@@ -16,39 +16,20 @@ encourage you to do so first.
 
 ## Sharing data
 
-        <li>
-            <a href="sharedCursor.html">Shared Cursor</a> - Share the mouse cursor
-            position between two clients with really low latency.
-        </li>
-        <li>
-            <a href="fileDropShare.html">File Sharing</a> - Share arbitrary files
-            between two clients.
-        </li>
-        <li>
-            <a href="shareInput.html">Share Input</a> - Shows how to sync user
-            input in different <code>&lt;form&gt;</code> types and <code>&lt;textarea&gt;</code>.
-        </li>
-        <li>
-            <a href="supportChat.html">Support Chat</a> - Shows how to display a real-time preview of what other users are typing in a chat.
-        </li>
-    </ul>
-    <h2>User management</h2>
-    <ul>
-        <li>
-            <a href="registerUsers.html">Register Users</a> - A simple form for
-            registering new users.
-        </li>
-    </ul>
-    <h2>Experimental</h2>
-    <p class="warning">
-        These examples show unstable or upcoming features that might change or are not production ready.
-    </p>
-    <ul>
-        <li>
-            <a href="conferenceCall.html">Conference Call</a> - Sets up a 3-way video
-            call inside the same web page where you can select active speaker manually.
-        </li>
-        <li>
-            <a href="multiClientConferenceCall.html">Multi Client Conference Call</a> - Sets up a multi-party conference between anyone who enters the page. The active speaker is switched using voice activation.
-        </li>
-    </ul>
+* <a href="sharedCursor.html">Shared Cursor</a> - Share the mouse cursor position between two clients with really low latency.
+
+* <a href="fileDropShare.html">File Sharing</a> - Share arbitrary files between two clients.
+
+* <a href="shareInput.html">Share Input</a> - Shows how to sync user input in different <code>&lt;form&gt;</code> types and <code>&lt;textarea&gt;</code>.
+
+* <a href="supportChat.html">Support Chat</a> - Shows how to display a real-time preview of what other users are typing in a chat.
+
+## User management
+* <a href="registerUsers.html">Register Users</a> - A simple form for registering new users.
+
+## Experimental
+*WARNING!* These examples show unstable or upcoming features that might change or are not production ready.
+
+* <a href="conferenceCall.html">Conference Call</a> - Sets up a 3-way video call inside the same web page where you can select active speaker manually.
+
+* <a href="multiClientConferenceCall.html">Multi Client Conference Call</a> - Sets up a multi-party conference between anyone who enters the page. The active speaker is switched using voice activation.
