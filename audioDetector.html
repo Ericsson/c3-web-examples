@@ -61,8 +61,12 @@ var indicatorText = document.getElementById('indicatorText')
 var ERROR = 'ERROR' // Just used for clarity when calling displayMessage/2
 var WARNING = 'WARNING' // Just used for clarity when calling displayMessage/2
 
+// Constants used to represent the state (_status) of the audio monitor
 AudioMonitor.AUDIO_DETECTED = true
 AudioMonitor.AUDIO_NOT_DETECTED = false
+
+// The minimum value of what can be considered "audio detected".
+// Can (and should) be tweaked to fit the use case and environment of the AudioMonitor.
 AudioMonitor.AUDIO_DETECTION_THRESHOLD = 0.000001
 
 /**
