@@ -14,6 +14,12 @@ encourage you to do so first.
 
 * <a href="recordLocal.html">Record local</a> - Previews video from a camera and allows recording of it to WebM format. When stopped the recording is previewed and can be downloaded.
 
+
+## WebRTC media device access
+
+* <a href="audioDetector.html">Audio Detector</a> - Handles errors that can occur when accessing user media devices, and verifies that audio is received from the microphone.
+* <a href="audioMeter.html">Audio Meter</a> - Accesses the microphone and show the current volume as both raw and filtered values.
+
 ## Sharing data
 
 * <a href="sharedCursor.html">Shared Cursor</a> - Share the mouse cursor position between two clients with really low latency.
