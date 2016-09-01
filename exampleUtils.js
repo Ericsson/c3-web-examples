@@ -220,10 +220,7 @@ function logError(ret) {
 function getCctAddress() { // eslint-disable-line no-unused-vars
   var homeServerURL = localStorage.getItem('homeServerURL')
   if (!homeServerURL) {
-    homeServerURL = window.prompt('Home Server URL', 'http://localhost:8008')
-    // Maybe remove trailing /
-    homeServerURL = homeServerURL.replace(/\/$/, '')
-    localStorage.setItem('homeServerURL', homeServerURL)
+    homeServerURL = 'https://webrtc-test.cct.ericsson.net'
   }
   return homeServerURL
 }
@@ -246,7 +243,9 @@ document.addEventListener('DOMContentLoaded', function () {
   reset.text = 'reset'
   reset.href = '#'
   reset.onclick = function () {
-    localStorage.removeItem('homeServerURL')
+    var homeServerURL = window.prompt('Home Server URL', getCctAddress())
+    homeServerURL = homeServerURL.replace(/\/$/, '')
+    localStorage.setItem('homeServerURL', homeServerURL)
     window.location.reload()
   }
   div.appendChild(textnode)
