@@ -1,6 +1,6 @@
 # C3 Web Examples
 
-The easist way to get started developing on top of Ericsson C3 is to look
+The easist way to get started developing on top of Ericsson Contextual Communication Cloud (C3) is to look
 at a few <code>C3 Web SDK</code> example applications. But if you have not yet
 read the <a href="https://ericsson.github.io/c3-web-guide/">introduction</a> we strongly
 encourage you to do so first.
