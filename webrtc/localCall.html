@@ -17,26 +17,56 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>proxyStream</title>
-<link rel="stylesheet" type="text/css" href="resources/main.css">
-<link rel="icon" href="resources/favicon.ico">
+<title>Local Call</title>
+<link rel="stylesheet" type="text/css" href="../resources/main.css">
+<link rel="icon" href="../resources/favicon.ico">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/3.2.1/es6-promise.min.js"></script>
 <script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
-<script type="text/javascript" src="exampleUtils.js"></script>
+<script type="text/javascript" src="../exampleUtils.js"></script>
 </head>
 <body>
 <div class="navbar">
-    <img class="brand-line" src="resources/ericsson_brandline.jpg">
+    <img class="brand-line" src="../resources/ericsson_brandline.jpg">
     <div class="navbar-container">
       <a href="/c3-web-examples">
-          <img class="navbar-logo" src="resources/ECON_116px.png">
+          <img class="navbar-logo" src="../resources/ECON_116px.png">
           <span class="navbar-title">Ericsson C3 Web examples</span>
       </a>
       <div id="homeServerBanner"></div>
     </div>
 </div>
 <div class="contentContainer">
-<video id="videoSink" autoplay></video>
+<div class="about">
+	<h3>Local Call example</h3>
+	This example shows how to connect two <a href="https://get.cct.ericsson.net/latest/docs/reference/Client.html">clients</a>
+	together through a <a href="https://get.cct.ericsson.net/latest/docs/reference/Room.html">room</a>. Once they both have
+	joined the room, a peer-2-peer WebRTC <a href="https://get.cct.ericsson.net/latest/docs/reference/Room.html#startCall__anchor">call</a>
+	is set up.
+</div>
+<div class="view-container">
+<div class="self-video-container">
+    <video muted="true" id="self1" autoplay></video>
+    <div class="footer-block"><p>Self view 1</p></div>
+</div>
+</div>
+<div class="view-container">
+<div class="self-video-container">
+    <video muted="true" id="self2" autoplay></video>
+    <div class="footer-block"><p>Self view 2</p></div>
+</div>
+</div>
+<div class="view-container">
+<div class="remote-video-container">
+    <video muted="true" id="remote1" autoplay></video>
+    <div class="footer-block"><p>Remote view 1</p></div>
+</div>
+</div>
+<div class="view-container">
+<div class="remote-video-container">
+    <video muted="true" id="remote2" autoplay></video>
+    <div class="footer-block"><p>Remote view 2</p></div>
+</div>
+</div>
 </div>
 <footer id="footer">
     <p>
@@ -46,7 +76,10 @@
     <div id="log" class='list-group'></div>
 </footer>
 <script type="text/javascript">
-var videoSink = document.getElementById('videoSink')
+var self1 = document.getElementById('self1')
+var self2 = document.getElementById('self2')
+var remote1 = document.getElementById('remote1')
+var remote2 = document.getElementById('remote2')
 
 cct.log.setLogLevel(cct.log.ALL)
 cct.log.setLogLevel('events', cct.log.NONE)
@@ -68,7 +101,7 @@ Promise.all([
 .then(setupCall)
 .catch(function (error) {
   cct.log.error('error', error)
-  logError('Failed to setup proxy stream')
+  logError('Failed to setup local call')
 })
 
 function joinCallRoom() {
@@ -83,63 +116,24 @@ function joinCallRoom() {
   ])
 }
 
-var sink
-var source
+var source1
+var source2
 var call1
 var call2
 
 function setupCall(rooms) {
-  sink = new cct.ProxySink()
-  source = new cct.ProxySource()
+  source1 = new cct.DeviceSource()
+  source2 = new cct.DeviceSource()
+  source1.connect(self1)
+  source2.connect(self2)
 
-  cct.log.info('Setup', 'Both clients in same room, initiating call')
+  call1 = rooms[0].startCall(client2.user.id)
+  call1.setLocalSource('main', source1)
+  call1.getRemoteSource('main').connect(remote1)
 
-  call1 = rooms[0].startCall(client2.user)
-  call2 = rooms[1].startCall(client1.user)
-
-  call1.attach('main', sink)
-  call2.attach('main', source)
-  source.connect(videoSink)
-
-  var peerConnection = new window.RTCPeerConnection({
-    iceServers: [],
-  })
-  peerConnection.onicecandidate = function (event) {
-    sink.addCandidate(event.candidate)
-  }
-
-  var mediaSource = new cct.DeviceSource()
-  mediaSource.once('stream', function (stream) {
-    log('stream', 'have stream ' + stream)
-    peerConnection.addStream(stream)
-    peerConnection.createOffer(function (offer) {
-      peerConnection.setLocalDescription(offer, function () {
-        sink.setOffer(peerConnection.localDescription)
-      }, logError)
-    }, logError)
-  })
-
-  sink.on('candidate', function (candidate) {
-    peerConnection.addIceCandidate(new RTCIceCandidate(candidate), function () {
-      log('candidate', candidate.candidate)
-    }, logError)
-  })
-
-  sink.on('answer', function (answer) {
-    peerConnection.setRemoteDescription(new RTCSessionDescription(answer), function () {
-      log('answer', answer.sdp)
-    }, logError)
-  })
-
-  var added = true
-  videoSink.onclick = function () {
-    if (added) {
-      call1.detach('main')
-    } else {
-      call1.attach('main', sink)
-    }
-    added = !added
-  }
+  call2 = rooms[1].startCall(client1.user.id)
+  call2.setLocalSource('main', source2)
+  call2.getRemoteSource('main').connect(remote2)
 }
 
 </script>
