@@ -5,6 +5,8 @@ at a few <code>C3 Web SDK</code> example applications. But if you have not yet
 read the <a href="https://ericsson.github.io/c3-web-guide/">introduction</a> we strongly
 encourage you to do so first.
 
+All examples are available live at https://ericsson.github.io/c3-web-examples/
+
 ## WebRTC calling
 * **Local Call** - (<a href="webrtc/localCall.html">code</a> | <a href="https://ericsson.github.io/c3-web-examples/webrtc/localCall.html">live</a>) - Sets up a 2-way audio/video call inside the same web page.
   
@@ -31,6 +33,8 @@ encourage you to do so first.
 
 ## User management
 * **Register Users** - (<a href="users/registerUsers.html">code</a> | <a href="https://ericsson.github.io/c3-web-examples/users/registerUsers.html">live</a>) - A simple form for registering new users.
+
+* **Pin Session Setup** - (<a href="users/pinSession.html">code</a> | <a href="https://ericsson.github.io/c3-web-examples/users/pinSession.html">live</a>) - A simple session setup example using pin codes.
 
 ## Experimental
 *WARNING!* These examples show unstable or upcoming features that might change or are not production ready.
