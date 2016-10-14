@@ -220,7 +220,7 @@ function logError(ret) {
 function getCctAddress() { // eslint-disable-line no-unused-vars
   var homeServerURL = localStorage.getItem('homeServerURL')
   if (!homeServerURL) {
-    homeServerURL = 'https://webrtc-test.cct.ericsson.net'
+    homeServerURL = 'https://demo.cct.ericsson.net'
   }
   return homeServerURL
 }
