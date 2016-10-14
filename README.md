@@ -9,7 +9,7 @@ All examples are available live at https://ericsson.github.io/c3-web-examples/
 
 ## WebRTC calling
 * **Local Call** - (<a href="webrtc/localCall.html">code</a> | <a href="https://ericsson.github.io/c3-web-examples/webrtc/localCall.html">live</a>) - Sets up a 2-way audio/video call inside the same web page.
-  
+
 * **Multi Client Call** - (<a href="webrtc/multiClientCall.html">code</a> | <a href="https://ericsson.github.io/c3-web-examples/webrtc/multiClientCall.html">live</a>) - Sets up a 2-way audio/video by asking two users to enter the same unique URL.
 
 ## WebRTC recording
@@ -42,3 +42,5 @@ All examples are available live at https://ericsson.github.io/c3-web-examples/
 * **Conference Call** - (<a href="experimental/conferenceCall.html">code</a> | <a href="https://ericsson.github.io/c3-web-examples/experimental/conferenceCall.html">live</a>) - Sets up a 3-way video call inside the same web page where you can select active speaker manually.
 
 * **Multi Client Conference Call** - (<a href="experimental/multiClientConferenceCall.html">code</a> | <a href="https://ericsson.github.io/c3-web-examples/experimental/multiClientConferenceCall.html">live</a>) - Sets up a multi-party conference between anyone who enters the page. The active speaker is switched using voice activation.
+
+* **BankID authentication** - (<a href="experimental/bankIdAuth.html">code</a> | <a href="https://ericsson.github.io/c3-web-examples/experimental/bankIdAuth.html">live</a>) - Enables BankID authentication using personal-number. The example will not work unless a BankID server is up and running and a url to the /login endpoint is provided. Also a test version of BankID Security App should be installed on a mobile device.

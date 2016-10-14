@@ -1,0 +1,95 @@
+<!--
+ * Copyright (C) 2016 Ericsson AB. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ -->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>getElementById example</title>
+    <link rel="stylesheet" type="text/css" href="../resources/main.css">
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  </head>
+  <body>
+    <div class="navbar">
+    <img class="brand-line" src="../resources/ericsson_brandline.jpg">
+    <div class="navbar-container">
+      <a href="/c3-web-examples">
+          <img class="navbar-logo" src="../resources/ECON_116px.png">
+          <span class="navbar-title">Ericsson C3 Web examples</span>
+      </a>
+      <div id="homeServerBanner"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    function postPNumberToBankId() {
+      var personal_number = document.getElementById('personal-number').value
+      console.log("this is the display-name", personal_number)
+      var options = {
+          personal_number: parseInt(personal_number),}
+           if (personal_number) {
+              $.ajax({
+                type: 'POST',
+                // This is a URL to bankid server
+                url:'http://localhost:64501/login',
+                processData: false,
+                data: JSON.stringify(options),
+                contentType: 'application/json',
+                accepts: "application/json; charset=utf-8",
+                success: function(result) {
+                  if (result) {
+                    $('#register').html('Login Successful!</br>'+ result['Family'] + '</br>')
+                    console.log(" the result is: ", result)
+                    console.log("localpart: ", result['Family'])
+                } else {
+                   $('#result').html('Failed to make a server-side call. Check your configuration and console.');
+                  }
+                }
+              })
+            }
+    }
+
+</script>
+<div class="contentContainer">
+    <div id="main">
+        <div class="about">
+            <h2>BankID authentication example</h2>
+            This example shows how to authenticate a new or existing user
+              on the server using mobile bankid.
+        </div>
+        <div id="register">
+                <ul>
+                    <li>
+                        <label>Personal Number</label><input id="personal-number" type="text" required value="196111036148">
+                    </li>
+                        <button onclick="postPNumberToBankId();">Register</button>
+                </ul>
+            <div id="status"></div>
+        </div>
+    </div>
+</div>
+
+
+  <footer id="footer">
+    <p>
+        <span style="position: relative; left: 5vw;">&copy Ericsson 2016</span>
+    </p>
+    <div id="log" class='list-group'></div>
+  </footer>
+
+  </body>
+</html>
