@@ -36,6 +36,8 @@ All examples are available live at https://ericsson.github.io/c3-web-examples/
 
 * **Pin Session Setup** - (<a href="users/pinSession.html">code</a> | <a href="https://ericsson.github.io/c3-web-examples/users/pinSession.html">live</a>) - A simple session setup example using pin codes.
 
+* **Session Handling** - (<a href="users/sessionHandling.html">code</a> | <a href="https://ericsson.github.io/c3-web-examples/users/sessionHandling.html">live</a>) - Shows how to create, save, load, and clear sessions.
+
 ## Experimental
 *WARNING!* These examples show unstable or upcoming features that might change or are not production ready.
 
