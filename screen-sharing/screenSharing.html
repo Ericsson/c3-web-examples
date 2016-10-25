@@ -77,7 +77,7 @@ input {
         </div>
 </div>
 <script type="application/javascript">
-var video_status = false;
+var videoStatus = false;
 var stop = document.getElementById("stopbuttons");
 
 
@@ -92,17 +92,17 @@ function startScreen(){
     console.log('screen sharing failed:', error);
   });
   stop.style.display = "block";
-  video_status = true;
+  videoStatus = true;
 }
 
 function stopScreen(){
-  if (video_status) {
+  if (videoStatus) {
     if (videoElement) {
       screenshareSource.disconnect(videoElement);
     }
-  video_status = false;
-  stop.style.display = "none";
   }
+  videoStatus = false;
+  stop.style.display = "none";
 }
 </script>
       <footer id="footer">
