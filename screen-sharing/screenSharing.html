@@ -17,53 +17,46 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Session handling</title>
-      <link rel="stylesheet" type="text/css" href="../resources/main.css">
-      <link rel="icon" href="../resources/favicon.ico">
-      <script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
-        <style>
-        #main {
-          display: block;
-          margin: 0px auto;
-          text-align: center
-        }
-        #content {
-          display: inline-block;
-        }
-        #frames {
-          display: inline-block;
-          max-width: 180px;
-          vertical-align: top;
-        }
-        #startbuttons {
-          display: block;
-        }
-        #stopbuttons {
-          display: none;
-        }
-        #message {
-          font-size: 24px;
-          font-family: "Gentium Basic", serif;
-        }
-        h1 {
-          font-size: 40px;
-          font-family: "Gentium Basic", serif;
-        }
-        input {
-          font-size: 28px;
-          font-family: "Gentium Basic", serif;
-        }
-        p {
-          color: green;
-        }
-        p.error {
-          color: red;
-        }
-    </style>
-  </head>
-  <body>
-      <div id="main">
-
+<title>Session handling</title>
+<link rel="stylesheet" type="text/css" href="../resources/main.css">
+<link rel="icon" href="../resources/favicon.ico">
+<script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
+<style>
+#main {
+    display: block;
+    margin: 0px auto;
+    text-align: center
+}
+#content {
+    display: inline-block;
+}
+#frames {
+    display: inline-block;
+    max-width: 180px;
+    vertical-align: top;
+}
+#startbuttons {
+    display: block;
+}
+#stopbuttons {
+    display: none;
+}
+#message {
+    ont-size: 24px;
+    font-family: "Gentium Basic", serif;
+    }
+h1 {
+    ont-size: 40px;
+    font-family: "Gentium Basic", serif;
+}
+input {
+    font-size: 28px;
+    font-family: "Gentium Basic", serif;
+}
+</style>
+</head>
+<body>
+<div id="main">
         <div class="navbar">
             <img class="brand-line" src="../resources/ericsson_brandline.jpg">
             <div class="navbar-container">
@@ -75,8 +68,6 @@
             </div>
         </div>
         <h2 class="navbar-title"><b>C3 Screen Share Example </b></h2>
-
-
         <div id="startbuttons">
           <input value="Screen" onclick="startScreen();" type="button">
         </div>
@@ -84,43 +75,39 @@
         <div style="display: none;" id="stopbuttons">
           <input value="Stop" onclick="stopScreen();" type="button">
         </div>
-      </div>
-    <script type="application/javascript">
-        var video_status = false;
-        var stop = document.getElementById("stopbuttons");
-        var content = document.getElementById("content");
+</div>
+<script type="application/javascript">
+var video_status = false;
+var stop = document.getElementById("stopbuttons");
 
 
+function startScreen(){
+  screenshareSource = new cct.ScreenSource({
+    chromeExtensionId: 'abncbjlooaafopingleeaihpjfdbnhbd',
+    audio: false
+    }
+  );
+  screenshareSource.connect(videoElement);
+  screenshareSource.once('error', error => {
+    console.log('screen sharing failed:', error);
+  });
+  stop.style.display = "block";
+  video_status = true;
+}
 
-        function startScreen(){
-          var screenshareSource = new cct.ScreenSource({
-              chromeExtensionId: 'biingbakofmechbkfbojlmgifhidpnod',
-              audio: false
-              }
-            );
-
-            stop.style.display = "block";
-            screenshareSource.connect(videoElement);
-            video_status = true;
-          }
-
-          function stopScreen(){
-            if (video_status) {
-              if (videoElement) {
-                videoElement.srcObject = null;
-              }
-
-            videoElement.srcObject = null;
-            video_status = false;
-            stop.style.display = "none";
-            }
-          }
-
-    </script>
+function stopScreen(){
+  if (video_status) {
+    if (videoElement) {
+      screenshareSource.disconnect(videoElement);
+    }
+  video_status = false;
+  stop.style.display = "none";
+  }
+}
+</script>
       <footer id="footer">
         <p>
         <span style="position: relative; left: 5vw;">&copy Ericsson 2016</span>
-          <input type=button id="toggleLog" onClick="toggleLog()" value="show log"></input>
         </p>
         <div id="log" class='list-group'></div>
     </footer>
