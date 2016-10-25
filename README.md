@@ -9,7 +9,7 @@ All examples are available live at https://ericsson.github.io/c3-web-examples/
 
 ## WebRTC calling
 * **Local Call** - (<a href="webrtc/localCall.html">code</a> | <a href="https://ericsson.github.io/c3-web-examples/webrtc/localCall.html">live</a>) - Sets up a 2-way audio/video call inside the same web page.
-  
+
 * **Multi Client Call** - (<a href="webrtc/multiClientCall.html">code</a> | <a href="https://ericsson.github.io/c3-web-examples/webrtc/multiClientCall.html">live</a>) - Sets up a 2-way audio/video by asking two users to enter the same unique URL.
 
 ## WebRTC recording
@@ -20,6 +20,12 @@ All examples are available live at https://ericsson.github.io/c3-web-examples/
 
 * **Audio Detector** - (<a href="webrtc/audioDetector.html">code</a> | <a href="https://ericsson.github.io/c3-web-examples/webrtc/audioDetector.html">live</a>) - Handles errors that can occur when accessing user media devices, and verifies that audio is received from the microphone.
 * **Audio Meter** - (<a href="webrtc/audioMeter.html">code</a> | <a href="https://ericsson.github.io/c3-web-examples/webrtc/audioMeter.html">live</a>) - Accesses the microphone and show the current volume as both raw and filtered values.
+
+## WebRTC screen/application sharing
+
+* **Share Screen or Application** - (<a href="screen-sharing/screenSharing.html">code</a> | <a href="https://ericsson.github.io/c3-web-examples/screen-sharing/screenSharing.html">live</a>) -
+Allow users to share their screen or any running application, given that the Chrome and Firefox
+extentions are provided.
 
 ## Sharing data
 
