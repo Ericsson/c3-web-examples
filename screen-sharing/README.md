@@ -38,6 +38,14 @@ for deploying the screen sharing feature it would be much easier to just install
 For enabling screen sharing in Firefox:
 Enable `media.getusermedia.screensharing.enabled` and add this site's domain name to `media.getusermedia.screensharing.allowed_domains` in `about:config`
 
+### Enable screensharing via firefox extension
+
+You will need the contents of the current directory.
+
+```bash
+    firefox-extension/
+```
+
 ### Whitelist
 In Firefox it's enough for the page origin to be whitelisted. This can be done either by contacting Mozilla, or using an extension.
 
