@@ -1,0 +1,16 @@
+{
+  "title": "Ericsson C3 Screen Sharing",
+  "name": "ericsson-c3-screen-sharing",
+  "id": "{845eeb6c-594a-4a47-b69e-17f5cdf06b79}",
+  "version": "0.0.1",
+  "description": "This firefox extension enables screen capturing support in Firefox for c3 domain.",
+  "main": "index.js",
+  "author": "Negar Fazeli <negar.fazeli@ericsson.com>",
+  "engines": {
+    "firefox": ">=38.0a1"
+  },
+  "license": "MIT",
+  "permissions": {
+    "unsafe-content-script": true
+  }
+}
