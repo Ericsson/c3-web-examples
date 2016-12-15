@@ -71,6 +71,7 @@ input {
         <div id="startbuttons">
           <input value="Screen" onclick="startScreen();" type="button">
         </div>
+        <p id="extensionLinkAlert" style="color:red;"></p>
         <video id="videoElement" style="height:100%; width:100%" autoplay="true" muted="true"></video>
         <div style="display: none;" id="stopbuttons">
           <input value="Stop" onclick="stopScreen();" type="button">
@@ -79,7 +80,17 @@ input {
 <script type="application/javascript">
 var isVideoEnabled = false;
 var stop = document.getElementById("stopbuttons");
+let chromeExtensionId = 'epajpkbdigdpepgncdpmilaoamkjgoah'
+let extensionUrl = `https://chrome.google.com/webstore/detail/${chromeExtensionId}`
 
+const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor)
+
+if (isChrome){
+  document.getElementById("extensionLinkAlert").innerHTML =
+    `<h3>
+      Screen sharing extension is not installed. Get it from the <a target='_blank' href=${extensionUrl}>Chrome web store</a>.
+    </h3> `
+}
 
 function startScreen(){
   screenshareSource = new cct.ScreenSource({
