@@ -219,19 +219,19 @@ function handleFiles(files, fileShare) {
     var fileRef = cct.FileRef.fromFile(file)
     fileShare.set('file', fileRef)
     fileRef.on('transfer', function (transfer) {
-      log('Transfer', 'Transfer to ' + transfer.peer.id)
+      log('Transfer', 'Transfer to ' + transfer.peerId)
 
       transfer.on('progress', function (progress) {
         progressBar.value = progress
       })
       transfer.on('done', function () {
-        log('Transfer', 'Transfer to ' + transfer.peer.id + ' completed')
+        log('Transfer', 'Transfer to ' + transfer.peerId + ' completed')
       })
       transfer.on('error', function (error) {
-        log('Transfer', 'Transfer to ' + transfer.peer.id + ' failed: ', error)
+        log('Transfer', 'Transfer to ' + transfer.peerId + ' failed: ', error)
       })
       transfer.on('end', function (reason) {
-        log('Transfer', 'Transfer to ' + transfer.peer.id + ' ended: ' + reason)
+        log('Transfer', 'Transfer to ' + transfer.peerId + ' ended: ' + reason)
       })
     })
   }
