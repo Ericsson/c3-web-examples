@@ -17,45 +17,51 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
-<title>Audio detection</title>
-<link rel="stylesheet" type="text/css" href="../resources/main.css">
-<link rel="icon" href="../resources/favicon.ico">
-<script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
-<script type="text/javascript" src="../exampleUtils.js"></script>
+  <meta charset="utf-8">
+  <title>Audio detection</title>
+  <link rel="stylesheet" type="text/css" href="../resources/main.css">
+  <link rel="icon" href="../resources/favicon.ico">
+  <script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
+  <script type="text/javascript" src="../exampleUtils.js"></script>
+  <style type="text/css">
+    .view-container {
+      margin: 0 20px;
+    }
+  </style>
 </head>
 <body>
-
-<div class="navbar">
+  <div class="navbar">
     <img class="brand-line" src="../resources/ericsson_brandline.jpg">
     <div class="navbar-container">
       <a href="/c3-web-examples">
-          <img class="navbar-logo" src="../resources/ECON_116px.png">
-          <span class="navbar-title">Ericsson C3 Web examples</span>
+        <img class="navbar-logo" src="../resources/ECON_116px.png">
+        <span class="navbar-title">Ericsson C3 Web examples</span>
       </a>
       <div id="homeServerBanner"></div>
     </div>
-</div>
-<div class="contentContainer">
-<div class="about">
-	<h3>Audio Detection example</h3>
-	This example shows how to use an <a href="https://get.cct.ericsson.net/latest/docs/reference/AudioMeter.html">AudioMeter</a> to detect if your microphone is working correctly. It also shows how to deal with various problems that can occur when requesting microphone access.
-</div>
-<div class="view-container">
-  <button onclick="setup()">Request Microphone</button>
-  <div id="indicatorContainer">
-    <p id="indicatorText" style="color:white;"></p>
   </div>
-</div>
-</div>
-<footer id="footer">
-  <p>
-    <span style="position: relative; left: 5vw;">&copy Ericsson 2016</span>
-    <input type=button id="toggleLog" onClick="toggleLog()" value="show log"></input>
-  </p>
-  <div id="log" class='list-group'></div>
-</footer>
+  <div class="contentContainer">
+  <div class="about">
+    <h3>Audio Detection example</h3>
+    This example shows how to use an <a href="https://get.cct.ericsson.net/latest/docs/reference/AudioMeter.html">AudioMeter</a> to detect if your microphone is working correctly. It also shows how to deal with various problems that can occur when requesting microphone access.
+  </div>
+  <div class="view-container">
+    <button onclick="setup()">Request Microphone</button>
+    <div id="indicatorContainer">
+      <p id="indicatorText" style="color:white;"></p>
+    </div>
+  </div>
+  </div>
+  <footer id="footer">
+    <p>
+      <span style="position: relative; left: 5vw;">&copy Ericsson 2016</span>
+      <input type=button id="toggleLog" onClick="toggleLog()" value="show log"></input>
+    </p>
+    <div id="log" class='list-group'></div>
+  </footer>
 <script>
+'use strict'
+
 var indicatorContainer = document.getElementById('indicatorContainer')
 var indicatorText = document.getElementById('indicatorText')
 var ERROR = 'ERROR' // Just used for clarity when calling displayMessage/2
@@ -73,11 +79,11 @@ AudioMonitor.AUDIO_DETECTION_THRESHOLD = 0.000001
  * An AudioMonitor is responsible for monitoring a DeviceSource to detect whether audio is working.
  * It emits various events depending on the status of the DeviceSource.
  * Only one DeviceSource can be monitored at any given time.
- * 
+ *
  * Usage:
  * var audioMonitor = new AudioMonitor()
  * audioMonitor.on('event_type', callback)
- * 
+ *
  * audioMonitor.monitor(someDeviceSourceWithAudio)
  */
 function AudioMonitor () {
@@ -118,14 +124,8 @@ AudioMonitor.prototype = {
   // Called when DeviceSource.promise is rejected, for instance if access is denied or because of some other error.
   _handleDeviceRejected: function (error) {
     this._emit('error', error)
-    if (error.name === 'PermissionDeniedError' || error.name === 'SecurityError' || error.name === 'NotAllowedError') {
-      // Browsers are inconsistent in what errors are thrown when mic/camera access is denied.
-      // PermissionDeniedError is thrown by Chrome and the plugin
-      // SecurityError is from Firefox 48
-      // NotAllowedError is from Firefox 50 Developer edition and onward
+    if (error.name === 'NotAllowedError') {
       this._emit('PermissionDeniedError', error)
-    } else if (error.name === 'PermissionDismissedError') {
-      this._emit('PermissionDismissedError', error)
     }
   },
 
@@ -165,23 +165,20 @@ var monitor = new AudioMonitor()
 monitor.on('PermissionDeniedError', function () {
   displayMessage('Microphone access was rejected by the user', ERROR)
 })
-monitor.on('PermissionDismissedError', function () {
-  displayMessage('The user dismissed the microphone access dialog', ERROR)
-})
 monitor.on('UnsupportedBrowserError', function (error) {
   displayMessage(error.message, WARNING)
 })
 
 monitor.on('audioDetected', function () {
-    displayMessage('Audio detected')
+  displayMessage('Audio detected')
 })
 
 monitor.on('silenceDetected', function () {
-    displayMessage('No audio detected', ERROR)
+  displayMessage('No audio detected', ERROR)
 })
 
 monitor.on('requestingAccess', function () {
-    displayMessage('Waiting for user to give microphone access', WARNING)
+  displayMessage('Waiting for user to give microphone access', WARNING)
 })
 
 monitor.on('error', function (error) {
