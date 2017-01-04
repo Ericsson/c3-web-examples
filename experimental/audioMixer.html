@@ -17,104 +17,91 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
-<title>AudioMixer</title>
-<link rel="stylesheet" type="text/css" href="../resources/main.css">
-<link rel="icon" href="../resources/favicon.ico">
-<script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
-<script type="text/javascript" src="../exampleUtils.js"></script>
-<script type="text/javascript" src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
-<style>
-  .smallVideo {
-    height: 35%;
-    width: 40%;
-  }
-</style>
+  <meta charset="utf-8">
+  <title>AudioMixer</title>
+  <link rel="stylesheet" type="text/css" href="../resources/main.css">
+  <link rel="icon" href="../resources/favicon.ico">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/3.2.1/es6-promise.min.js"></script>
+  <script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
+  <script type="text/javascript" src="../exampleUtils.js"></script>
+  <style>
+    .notes {
+      margin: 0 20px;
+    }
+  </style>
 </head>
 <body>
+  <div class="navbar">
+    <img class="brand-line" src="../resources/ericsson_brandline.jpg">
+    <a href="/c3-web-examples">
+      <img class="navbar-logo" src="../resources/ECON_116px.png">
+      <span class="navbar-title">Ericsson C3</span>
+    </a>
+    <div id="homeServerBanner"></div>
+  </div>
+  <div class="contentContainer">
+    <div class="about">
+      <h3>AudioMixer example</h3>
+      This example shows how to use a cct.AudioMixer as well as how to subclass cct.WebAudioSource.
+    </div>
+    <div class="notes">
+      <label><input type="checkbox" frequency="294" note="1"> Note 1</label>
+      <label><input type="checkbox" frequency="370" note="2"> Note 2</label>
+      <label><input type="checkbox" frequency="440" note="3"> Note 3</label>
+    </div>
+    <audio autoplay></audio>
+  </div>
+  <footer id="footer">
+    <p>
+    <span style="position: relative; left: 5vw;">&copy; Ericsson 2016</span>
+    <input type=button id="toggleLog" onClick="toggleLog()" value="show log"></input>
+    </p>
+    <div id="log" class='list-group'></div>
+  </footer>
+  <script>
+'use strict'
 
-<div class="navbar">
-  <img class="brand-line" src="../resources/ericsson_brandline.jpg">
-  <a href="/c3-web-examples">
-    <img class="navbar-logo" src="../resources/ECON_116px.png">
-    <span class="navbar-title">Ericsson C3</span>
-  </a>
-  <div id="homeServerBanner"></div>
-</div>
-<div class="contentContainer">
-<div class="about">
-  <h3>AudioMixer example</h3>
-  This example shows how to use a cct.AudioMixer as well as how to subclass cct.MediaSource.
-</div>
-<div class="view-container">
-  <audio autoplay></audio>
-</div>
-</div>
-<footer id="footer">
-  <p>
-  <span style="position: relative; left: 5vw;">&copy; Ericsson 2016</span>
-  <input type=button id="toggleLog" onClick="toggleLog()" value="show log"></input>
-  </p>
-  <div id="log" class='list-group'></div>
-</footer>
-<script>
-  'use strict'
+cct.log.setLogLevel(cct.log.ALL)
+cct.log.color = true
 
-  function AudioOscillatorSource(frequency) {
-    cct.MediaSource.call(this)
+var el = {
+  audio: document.querySelector('audio'),
+  notes: document.querySelector('.notes'),
+}
 
-    var AudioContext = window.AudioContext || window.webkitAudioContext
-    this._audioContext = new AudioContext()
+function AudioOscillatorSource(frequency) {
+  cct.WebAudioSource.call(this)
 
-    var destination = this._audioContext.createMediaStreamDestination()
-    this.setStream(destination.stream)
+  this._oscillator = this.context.createOscillator()
+  this._oscillator.connect(this.audioDestination)
+  this._oscillator.frequency.value = frequency
+  this._oscillator.start(0) // Play instantly
+}
 
-    this._oscillator = this._audioContext.createOscillator()
-    this._oscillator.connect(destination)
-    this._oscillator.frequency.value = frequency
-    this._oscillator.start(0) // Play instantly
+AudioOscillatorSource.prototype = Object.create(cct.WebAudioSource.prototype)
+AudioOscillatorSource.prototype.constructor = AudioOscillatorSource
+AudioOscillatorSource.prototype.stop = function () {
+  cct.WebAudioSource.prototype.stop.call(this)
+  this._oscillator.stop()
+  this._oscillator.disconnect()
+  delete this._oscillator
+}
+
+var audioMixer = new cct.AudioMixer()
+audioMixer.connect(el.audio)
+
+el.notes.addEventListener('change', function (event) {
+  var frequency = +event.target.getAttribute('frequency')
+  var labelText = event.target.labels[0].textContent
+
+  if (event.target.checked) {
+    event.target.source = new AudioOscillatorSource(frequency)
+    event.target.source.connect(audioMixer.inputs.get(labelText))
+  } else {
+    event.target.source.stop()
+    delete event.target.source
   }
-
-  AudioOscillatorSource.prototype = Object.create(cct.MediaSource.prototype, {
-    constructor: {value: AudioOscillatorSource},
-    stop: {value: function () {
-      this.setStream(null)
-
-      this._oscillator.stop()
-      this._oscillator.disconnect()
-      delete this._oscillator
-
-      this._audioContext.close()
-      delete this._audioContext
-    }},
-  })
-
-  var audioMixer = new cct.AudioMixer()
-
-  var audioElement = document.querySelector('audio')
-  var sink = new cct.HtmlSink({target: audioElement})
-  audioMixer.connect(sink)
-
-  var note1 = new AudioOscillatorSource(294)
-  var note2 = new AudioOscillatorSource(370)
-  var note3 = new AudioOscillatorSource(440)
-
-  note1.connect(audioMixer.inputs.get('note1'))
-
-  setTimeout(function () {
-    note2.connect(audioMixer.inputs.get('note2'))
-  }, 1000)
-
-  setTimeout(function () {
-    note3.connect(audioMixer.inputs.get('note3'))
-  }, 2000)
-
-  setTimeout(function () {
-    note1.stop()
-    note2.stop()
-    note3.stop()
-  }, 3600)
-
-</script>
+})
+  </script>
 </body>
 </html>
