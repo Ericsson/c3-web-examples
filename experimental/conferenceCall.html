@@ -17,95 +17,91 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Conference Call</title>
-<meta charset="UTF-8">
-<link rel="stylesheet" type="text/css" href="../resources/main.css">
-<link rel="icon" href="../resources/favicon.ico">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/3.2.1/es6-promise.min.js"></script>
-<script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
-<script type="text/javascript" src="../exampleUtils.js"></script>
-<style type="text/css">
-video.local {
-    height: 15%;
-    width: 10vw;
-}
-video.local.activespeaker {
-    border-style: solid;
-    border-color: red;
-    border-width: thin;
-    border-radius: 1vw;
-}
-video.remote {
-    width: 45vw;
-    height: 35vw;
-}
-.contentContainer {
-    text-align:center;
-}
-</style>
+  <title>Conference Call</title>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="../resources/main.css">
+  <link rel="icon" href="../resources/favicon.ico">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/3.2.1/es6-promise.min.js"></script>
+  <script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
+  <script type="text/javascript" src="../exampleUtils.js"></script>
+  <style type="text/css">
+    video.local {
+      height: 15%;
+      width: 10vw;
+    }
+    video.local.activespeaker {
+      border-style: solid;
+      border-color: red;
+      border-width: thin;
+      border-radius: 1vw;
+    }
+    video.remote {
+      width: 45vw;
+      height: 35vw;
+    }
+    .contentContainer {
+      text-align:center;
+    }
+  </style>
 </head>
 <body>
-<div class="navbar">
+  <div class="navbar">
     <img class="brand-line" src="../resources/ericsson_brandline.jpg">
     <div class="navbar-container">
       <a href="/c3-web-examples">
-          <img class="navbar-logo" src="../resources/ECON_116px.png">
-          <span class="navbar-title">Ericsson C3 Web examples</span>
+        <img class="navbar-logo" src="../resources/ECON_116px.png">
+        <span class="navbar-title">Ericsson C3 Web examples</span>
       </a>
       <div id="homeServerBanner"></div>
     </div>
-</div>
-<div class="contentContainer">
+  </div>
+  <div class="contentContainer">
     <video class="remote" muted="true" id="remote" autoplay></video>
     <hr/>
     <p>
-        Click one of the videos below to make that user the "active speaker".
+      Click one of the videos below to make that user the "active speaker".
     </p>
     <hr/>
     <video class="local" muted="true" id="self1" autoplay></video>
     <video class="local" muted="true" id="self2" autoplay></video>
     <video class="local" muted="true" id="self3" autoplay></video>
-</div>
-<footer id="footer">
+  </div>
+  <footer id="footer">
     <p>
-		<span style="position: relative; left: 5vw;">&copy ERICSSON 2016</span>
-        <input type=button id="toggleLog" onClick="toggleLog()" value="show log"></input>
+      <span style="position: relative; left: 5vw;">&copy ERICSSON 2016</span>
+      <input type=button id="toggleLog" onClick="toggleLog()" value="show log"></input>
     </p>
     <div id="log" class='list-group'></div>
-</footer>
+  </footer>
+  <script type="text/javascript">
+'use strict'
 
-<script type="text/javascript">
-var self1 = document.getElementById('self1')
-var self2 = document.getElementById('self2')
-var self3 = document.getElementById('self3')
-var remote = document.getElementById('remote')
+var el = {
+  self1: document.getElementById('self1'),
+  self2: document.getElementById('self2'),
+  self3: document.getElementById('self3'),
+  remote: document.getElementById('remote'),
+}
 
-cct.log.setLogLevel(cct.log.ALL)
+cct.log.setLogLevel('example', cct.log.ALL)
 cct.log.color = true
 
-var client1 = new cct.Client({
-  iceServers: EXAMPLE_UTILS_ICE_SERVERS,
-})
-var client2 = new cct.Client({
-  iceServers: EXAMPLE_UTILS_ICE_SERVERS,
-})
-var client3 = new cct.Client({
-  iceServers: EXAMPLE_UTILS_ICE_SERVERS,
-})
+var client1 = new cct.Client()
+var client2 = new cct.Client()
+var client3 = new cct.Client()
 
 Promise.all([
   cct.Auth.anonymous({serverUrl: getCctAddress()}).then(client1.auth),
   cct.Auth.anonymous({serverUrl: getCctAddress()}).then(client2.auth),
   cct.Auth.anonymous({serverUrl: getCctAddress()}).then(client3.auth),
-])
-.then(joinRoom)
-.then(setupConference)
-.catch(function (error) {
-  logError('Setup', error)
-})
+]).then(joinRoom)
+  .then(setupConference)
+  .catch(function (error) {
+    cct.log.error('example', 'Failed to setup conference, ' + error)
+  })
 
 function joinRoom() {
-  log('Setup', 'Joining the same room')
+  cct.log.info('example', 'Joining the same room')
   return Promise.all([
     client1.createRoom({
       invite: [client2.user, client3.user],
@@ -139,14 +135,14 @@ function setupConference(rooms) {
     video: true,
   })
 
-  log('Setup', 'All three clients in same room, initiating conference')
+  cct.log.info('example', 'All three clients in same room, initiating conference')
 
   // Start the conference(s)
   conference1 = rooms[0].startConference()
   conference2 = rooms[1].startConference()
   conference3 = rooms[2].startConference()
 
-  log('Setup', 'Setting up media switching')
+  cct.log.info('example', 'Setting up media switching')
 
   // Create some switchers
   switch1 = new cct.MediaSwitcher()
@@ -159,12 +155,12 @@ function setupConference(rooms) {
   conference3.attach('switch', switch3)
 
   // ..and set the input of each switcher
-  switch1.output.connect(remote)
+  switch1.output.connect(el.remote)
   camera1.connect(switch1)
   camera2.connect(switch2)
   camera3.connect(switch3)
 
-  log('Setup', 'Setting up media broadcasting')
+  cct.log.info('example', 'Setting up media broadcasting')
 
   // Create some broadcasters
   broadcaster1 = new cct.MediaBroadcaster()
@@ -183,54 +179,54 @@ function setupConference(rooms) {
   camera1.connect(broadcaster1)
   camera2.connect(broadcaster2)
   camera3.connect(broadcaster3)
-  camera1.connect(self1)
+  camera1.connect(el.self1)
 
   // Listen for the other broadcasters to connect, set output accordingly.
   broadcaster1.on('remoteSource:' + client2.user.id, function (source) {
-    log('broadcaster', 'Got a remote source from Client2')
-    source.connect(self2)
+    cct.log.info('example', 'Got a remote source from Client2')
+    source.connect(el.self2)
   })
   broadcaster1.on('remoteSource:' + client3.user.id, function (source) {
-    log('broadcaster', 'Got a remote source from Client3')
-    source.connect(self3)
+    cct.log.info('example', 'Got a remote source from Client3')
+    source.connect(el.self3)
   })
 
   // Listen for switching events from the switcher.
   // Update UI to reflect who the new active speaker is.
-  switch1.on('switch', function (newActive, oldActive) {
-    log('switcher', 'Switched from ' + oldActive + ' to ' + newActive)
+  switch1.on('activeSpeaker', function (newActive, oldActive) {
+    cct.log.info('example', 'Switched from ' + oldActive + ' to ' + newActive)
     switch (oldActive) {
       case client1.user.id:
-        self1.classList.remove('activespeaker')
+        el.self1.classList.remove('activespeaker')
         break
       case client2.user.id:
-        self2.classList.remove('activespeaker')
+        el.self2.classList.remove('activespeaker')
         break
       case client3.user.id:
-        self3.classList.remove('activespeaker')
+        el.self3.classList.remove('activespeaker')
         break
     }
     switch (newActive) {
       case client1.user.id:
-        self1.classList.add('activespeaker')
+        el.self1.classList.add('activespeaker')
         break
       case client2.user.id:
-        self2.classList.add('activespeaker')
+        el.self2.classList.add('activespeaker')
         break
       case client3.user.id:
-        self3.classList.add('activespeaker')
+        el.self3.classList.add('activespeaker')
         break
     }
   })
 
   // Click a thumbnail video to switch the active speaker.
-  self1.onclick = function () {
+  el.self1.onclick = function () {
     switch1.setActive() // Set client1 to active
   }
-  self2.onclick = function () {
+  el.self2.onclick = function () {
     switch1.setActive(client2.user.id) // Set client2 to active
   }
-  self3.onclick = function () {
+  el.self3.onclick = function () {
     switch3.setActive() // Set client3 to active.
   }
 
