@@ -16,6 +16,116 @@
 
 'use strict'
 
+function PeerConnecter(client) {
+  if (!(client instanceof cct.Client)) {
+    throw new TypeError('PeerConnecter client must be a cct.Client')
+  }
+  this.client = client
+  this.sessionKey = 'c3-examples-session'
+  this.returnSelf = function () {return this}.bind(this)
+}
+
+PeerConnecter.prototype.saveSession = function () {
+  var sessionStr = JSON.stringify(this.client.authInfo)
+  window.sessionStorage.setItem(this.sessionKey, sessionStr)
+}
+
+PeerConnecter.prototype.restoreSession = function () {
+  var sessionStr = window.sessionStorage.getItem(this.sessionKey)
+  if (!sessionStr) {
+    return null
+  }
+  try {
+    return JSON.parse(sessionStr)
+  } catch (error) {
+    cct.log.error('example', 'Failed to parse stored session, ' + error)
+    return null
+  }
+}
+
+PeerConnecter.prototype.auth = function () {
+  var authPromise
+  var session = this.restoreSession()
+
+  if (session) {
+    authPromise = this.client.auth(session).catch(function () {
+      cct.log.error('example', 'Failed to load session, ' + error)
+      return cct.Auth.anonymous({serverUrl: getCctAddress()}).then(this.client.auth)
+    })
+  } else {
+    authPromise = cct.Auth.anonymous({serverUrl: getCctAddress()}).then(this.client.auth)
+  }
+  return authPromise.then(function () {
+    return this.saveSession()
+  }.bind(this)).then(cct.webRtcReady).then(this.returnSelf)
+}
+
+// Creates a new room, or joins an existing one based on the url hash
+PeerConnecter.prototype.joinRoom = function () {
+  var roomId = window.location.hash.slice(1)
+  if (roomId) {
+    // If we're using a stored session the room might already be available
+    var existingRoom = this.client.getRoom(roomId)
+    if (existingRoom.membership === 'member') {
+      if (existingRoom.creator === this.client.user) {
+        cct.log.info('example', 'Found existing room as creator')
+      } else {
+        cct.log.info('example', 'Found existing room as peer')
+      }
+      this.room = existingRoom
+      return Promise.resolve(this)
+    }
+
+    cct.log.info('example', 'Joining room as peer')
+    return this.client.fetchRoomById(roomId).then(function (room) {
+      this.room = room
+      return room.join()
+    }.bind(this)).then(this.returnSelf)
+  } else {
+    cct.log.info('example', 'Creating new room')
+    return this.client.createRoom({
+      joinRule: 'open',
+      guestAccessRule: 'open',
+      powerLevels: cct.PowerLevelsEdit.fromDefault(this.client.user).userDefault(100),
+    }).then(function (room) {
+      this.room = room
+      history.replaceState('', '', '#' + room.id)
+      return this
+    }.bind(this))
+  }
+}
+
+PeerConnecter.prototype.enterCall = function () {
+  if (!this.room) {
+    throw new Error('Must join room before entering call')
+  }
+  if (this.client.user === this.room.creator) {
+    this.call = this.room.startPassiveCall()
+  } else {
+    this.call = this.room.startCall(this.room.creator)
+  }
+  return this
+}
+
+PeerConnecter.clientInRoom = function (client) {
+  window.onhashchange = function (event) {
+    var oldHash = event.oldURL.split('#')[1]
+    if (oldHash) {
+      location.reload()
+    }
+  }
+  var connecter = new PeerConnecter(client)
+  return connecter.auth().then(function () {
+    return connecter.joinRoom()
+  })
+}
+
+PeerConnecter.clientInCall = function (client) {
+  return PeerConnecter.clientInRoom(client).then(function (connecter) {
+    return connecter.enterCall()
+  })
+}
+
 function Peer2Peer(opts) {
   this.session = opts.session || ''
   this.client = opts.client || ''
