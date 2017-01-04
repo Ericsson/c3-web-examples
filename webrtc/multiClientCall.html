@@ -17,279 +17,205 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Multi Client Call</title>
-<meta charset="UTF-8">
-<link rel="stylesheet" type="text/css" href="../resources/main.css">
-<link rel="icon" href="../resources/favicon.ico">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/3.2.1/es6-promise.min.js"></script>
-<script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
-<script type="text/javascript" src="../exampleUtils.js"></script>
+  <title>Multi Client Call</title>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="../resources/main.css">
+  <link rel="icon" href="../resources/favicon.ico">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/3.2.1/es6-promise.min.js"></script>
+  <script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
+  <script type="text/javascript" src="../exampleUtils.js"></script>
+  <style type="text/css">
+    .link-container {
+      margin: 20px;
+    }
+    .view-container {
+      width: calc(100% - 40px);
+      margin: 20px;
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: space-around;
+    }
+    #chat-container {
+      min-width: 400px;
+    }
+    #chat-messages {
+      height: 200px;
+      display: flex;
+      flex-flow: column nowrap;
+      font-size: 1.0em;
+      background-color: rgba(255,255,255,0.9);
+      box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.2);
+      padding-left: 0.5em;
+      padding-right: 0.5em;
+      padding-top: 0.2em;
+      padding-bottom: 0.375em;
+      bottom: 245px;
+      overflow-y: scroll;
+      word-wrap: break-word;
+    }
+    /*All chat message bubbles*/
+    .chat-message {
+      margin-top: 6px;
+      display: inline-block;
+      padding: 2px;
+      padding-left: 5px;
+      padding-right: 5px;
+      max-width: calc(100% - 60px);
+      border: 1px solid rgba(145,145,145,0.8);
+      -webkit-box-shadow: 2px 2px 0px 0px rgba(0,0,0,0.1);
+      -moz-box-shadow: 2px 2px 0px 0px rgba(0,0,0,0.1);
+      box-shadow: 2px 2px 0px 0px rgba(0,0,0,0.1);
+      border-radius: 4px;
+    }
+    /*Self chat message bubbles*/
+    .self-message {
+      align-self: flex-end;
+      background-color: rgba(178,229,255,0.6);
+    }
+    /*Remote chat message bubbles*/
+    .remote-message {
+      align-self: flex-start;
+      background-color: rgba(226,226,226,0.6);
+    }
+    #chat-form {
+      margin: 20px 0;
+    }
+    input {
+      font-size: 0.9em;
+    }
+    .topContainer {
+      display: flex;
+      flex-flow: row wrap;
+    }
+    .about {
+      min-width: 480px;
+    }
+    #video-container {
+      position: relative;
+      flex: 0 1 720px;
+    }
+    #remote-view {
+      width: 100%;
+    }
+    #self-view {
+      position: absolute;
+      left: 0;
+      top: 0;
+      max-width: 20%;
+      height: auto;
+    }
+  </style>
 </head>
-
-<style type="text/css">
-#chat-container {
-    width: calc(25% + 46px);
-    margin-top: 20px;
-    margin-bottom: 20px;
-    margin: auto;
-}
-#chat_div {
-	height: 200px;
-	font-size: 1.0em;
-	background-color: rgba(255,255,255,0.9);
-	box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.2);
-	margin-bottom: 10px;
-	padding-left: 0.5em;
-	padding-right: 0.5em;
-	padding-top: 0.2em;
-	padding-bottom: 0.375em;
-	bottom: 245px;
-	overflow-y: scroll;
-	word-wrap: break-word;
-}
-#chat_but {
-	bottom: 245px;
-  height: 34px;
-  font-size: 0.9em;
-}
-/*Chat message bubble container*/
-.chatMessage {
-	margin-top: 6px;
-}
-.selfMessage {
-	text-align: right;
-}
-/*All chat message bubbles*/
-.chatMessage > div {
-	display: inline-block;
-	padding: 2px;
-	padding-left: 5px;
-	padding-right: 5px;
-	max-width: calc(100% - 60px);
-	border: 1px solid rgba(145,145,145,0.8);
-	-webkit-box-shadow: 2px 2px 0px 0px rgba(0,0,0,0.1);
-	-moz-box-shadow: 2px 2px 0px 0px rgba(0,0,0,0.1);
-	box-shadow: 2px 2px 0px 0px rgba(0,0,0,0.1);
-	border-radius: 4px;
-}
-/*Self chat message bubbles*/
-.selfMessage > div {
-	background-color: rgba(178,229,255,0.6);
-}
-/*Remote chat message bubbles*/
-.remoteMessage > div {
-	background-color: rgba(226,226,226,0.6);
-}
-#link-container {
-    margin: 20px;
-}
-#start-container {
-  margin: 20px;
-}
-input {
-    font-size: 0.9em;
-}
-@media (max-width: 700px) {
-  #chat-container {
-    display: none;
-  }
-}
-@media (max-width: 700px) {
-  .topContainer {
-    display: flex;
-    flex-direction: column !important;
-    align-items: center;
-  }
-}
-.topContainer {
-  display: flex;
-  flex-direction: row;
-}
-#chat_input {
-  display: flex;
-  flex-direction: row;
-}
-#remoteView {
-  width: 100%;
-  z-index: 1;
-}
-#selfView {
-  position: absolute;
-  z-index: 2;
-  left: -2%;
-  top: 3%;
-  max-width: 20vw;
-  max-height: 10vw;
-  margin: 0;
-}
-.videoContainer {
-  position: relative;
-  max-width: 100%;
-  margin: 30px;
-}
-
-</style>
-
 <body>
-<div class="navbar">
+  <div class="navbar">
     <img class="brand-line" src="../resources/ericsson_brandline.jpg">
     <div class="navbar-container">
       <a href="/c3-web-examples">
-          <img class="navbar-logo" src="../resources/ECON_116px.png">
-          <span class="navbar-title">Ericsson C3 Web examples</span>
+        <img class="navbar-logo" src="../resources/ECON_116px.png">
+        <span class="navbar-title">Ericsson C3 Web examples</span>
       </a>
       <div id="homeServerBanner"></div>
     </div>
-</div>
-<div class="contentContainer">
-    <div class="topContainer">
-      <div class="about">
-          <h3>Multi Client Call example</h3>
-          <p>
-              This example shows how to connect two <a href="https://get.cct.ericsson.net/latest/docs/reference/Client.html">clients</a>
-              together through a <a href="https://get.cct.ericsson.net/latest/docs/reference/Room.html">room</a>. A random
-              id for the room is generated and used to create a unique URL.
-          </p>
-          <p>
-              Once both have joined the room, a peer-2-peer WebRTC <a href="https://get.cct.ericsson.net/latest/docs/reference/Room.html#startCall__anchor">call</a>
-              is set up. Users can also chat with each other.
-          </p>
-      </div>
-      <div id="input-field-container">
-        <div id="start-container">
-          <div><p>Enter your preferred link name</p></div>
-          <input id="preferredName" type="text" value="" size="55">
-          <button onclick="startApp()">Start</button>
-        </div>
-        <div id="link-container">
-            <div><p>Send link to a friend</p></div>
-            <input id="link" type="text" value="" size="55">
-        </div>
-      </div>
-
+  </div>
+  <div class="topContainer">
+    <div class="about">
+      <h3>Multi Client Call example</h3>
+      <p>
+        This example shows how to connect two <a href="https://get.cct.ericsson.net/latest/docs/reference/Client.html">clients</a> together through a <a href="https://get.cct.ericsson.net/latest/docs/reference/Room.html">room</a>. A random id for the room is generated and used to create a unique URL.
+      </p>
+      <p>
+        Once both have joined the room, a peer-2-peer WebRTC <a href="https://get.cct.ericsson.net/latest/docs/reference/Room.html#startCall__anchor">call</a> is set up. Users can also chat with each other.
+      </p>
     </div>
-    <div class="videoContainer">
-        <video id="remoteView"></video>
-        <video id="selfView" muted></video>
+    <div class='link-container'>
+      <h4>Send link to a friend</h4>
+      <input id="link" type="text" value="" size="55">
+    </div>
+  </div>
+  <div class="view-container">
+    <div id="video-container">
+      <video id="remote-view"></video>
+      <video id="self-view" muted></video>
     </div>
     <div id="chat-container">
-        <div id="chat_div">
-            <label>Chat window</label>
-        </div>
-        <div id="chat_input">
-            <input type="sendtext" id="chat_txt" placeholder="Type here">
-            <input type="button" class="button" id="chat_but" value="Send">
-        </div>
+      <div id="chat-messages">
+        <label>Chat window</label>
+      </div>
+      <form id="chat-form">
+        <input type="text" id="chat-text" placeholder="Type here">
+        <input type="submit" class="button" value="Send">
+      </form>
     </div>
-</div>
-<footer id="footer">
+  </div>
+  <footer id="footer">
     <p>
-		<span style="position: relative; left: 5vw;">&copy ERICSSON 2016</span>
-        <input type=button id="toggleLog" onClick="toggleLog()" value="show log"></input>
+    <span style="position: relative; left: 5vw;">&copy ERICSSON 2016</span>
+      <input type=button id="toggleLog" onClick="toggleLog()" value="show log"></input>
     </p>
     <div id="log" class='list-group'></div>
-</footer>
+  </footer>
 <script>
-var chatText = document.getElementById('chat_txt')
-var chatButton = document.getElementById('chat_but')
-var chatDiv = document.getElementById('chat_div')
+'use strict'
 
-if (window.location.hash) {
-  startApp()
+cct.log.setLogLevel(cct.log.ALL)
+cct.log.setLogLevel('events', cct.log.NONE)
+cct.log.setLogLevel('own-events', cct.log.NONE)
+cct.log.color = true
+
+var el = {
+  chatText: document.getElementById('chat-text'),
+  chatForm: document.getElementById('chat-form'),
+  chatMessages: document.getElementById('chat-messages'),
+  link: document.getElementById('link'),
+  selfView: document.getElementById('self-view'),
+  remoteView: document.getElementById('remote-view'),
 }
 
-function startApp() {
-  var name = document.getElementById('preferredName').value
+var deviceSource = new cct.DeviceSource()
+deviceSource.connect(el.selfView)
 
-  var client = new cct.Client()
+var client = new cct.Client()
 
-  var peer = new Peer2Peer({
-    session: window.location.hash,
-    client: client,
-    preferredName: name,
+PeerConnecter.clientInCall(client).then(function (connecter) {
+  el.link.value = window.location.href
+
+  var room = connecter.room
+  var call = connecter.call
+
+  // setup call
+  call.setLocalSource('media', deviceSource)
+  call.getRemoteSource('media').connect(el.remoteView)
+
+  // setup chat
+  el.chatForm.addEventListener('submit', function (event) {
+    event.preventDefault()
+    if (el.chatText.value) {
+      room.send(el.chatText.value)
+      el.chatText.value = ''
+    }
   })
 
-  peer.start()
-    .then(prepareChat)
-    .then(setupListeners)
-    .then(function () {
-      peer.room.send(client.user.id + ' has connected')
-      document.getElementById('start-container').style.display = 'none'
-      document.getElementById('link').value = window.location.href
-    })
-    .catch(function (error) {
-      cct.log.error('error', error)
-      logError('Something went wrong')
-    })
+  room.on('event:m.room.message', function (event) {
+    var scrollPosition = el.chatMessages.scrollTop + el.chatMessages.clientHeight
+    var wasAtBottom = scrollPosition === el.chatMessages.scrollHeight
 
-  function prepareChat(peer) {
-    var room = peer.room
-    chatText.onkeyup = function (event) {
-      if (event.keyCode === 13) {
-        chatButton.click()
-      }
-    }
+    var message = document.createElement('div')
+    message.classList.add('chat-message')
+    message.textContent = event.content.body
 
-    chatButton.onclick = function () {
-      if (chatText.value) {
-        room.send(chatText.value)
-        chatText.value = ''
-        chatText.placeholder = ''
-      }
-    }
-    return room
-  }
-
-  function postChatMessage(msg, isOwnEvent) {
-    var messageNode = document.createElement('div')
-    var messageContent = document.createElement('div')
-    messageNode.classList.add('chatMessage')
-    messageContent.textContent = msg
-    messageNode.appendChild(messageContent)
-
-    if (isOwnEvent) {
-      messageNode.classList.add('selfMessage')
+    if (event.isOwnEvent) {
+      message.classList.add('self-message')
     } else {
-      messageNode.classList.add('remoteMessage')
+      message.classList.add('remote-message')
     }
 
-    chatDiv.appendChild(messageNode)
-    chatDiv.scrollTop = chatDiv.scrollHeight
-  }
+    el.chatMessages.appendChild(message)
 
-  function getSelfView() {
-    var source = new cct.DeviceSource()
-    source.connect(document.getElementById('selfView'))
-    return source
-  }
-
-  function setSource(call) {
-    console.log('call: ', call)
-    call.setLocalSource('media', getSelfView())
-    call.getRemoteSource('media').connect(document.getElementById('remoteView'))
-  }
-
-  function setupListeners(room) {
-    room.on('join', function (user, redundant) {
-      console.log('User joined: ' + user)
-      var call = peer.setupCall()
-      setSource(call)
-    })
-
-    room.on('event', function (event) {
-      if (event.type === 'm.room.message' && event.content.msgtype === 'm.text') {
-        postChatMessage(event.content.body, event.isOwnEvent)
-      }
-    })
-
-    room.on('call', function (call) {
-      call.start()
-      call.setLocalSource('media', getSelfView())
-      call.getRemoteSource('media').connect(document.getElementById('remoteView'))
-    })
-    return room
-  }
-}
+    if (wasAtBottom) {
+      el.chatMessages.scrollTop = el.chatMessages.scrollHeight
+    }
+  })
+})
 
 </script>
 <body>
