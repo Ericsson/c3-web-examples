@@ -17,110 +17,102 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Session handling</title>
-<link rel="stylesheet" type="text/css" href="../resources/main.css">
-<link rel="icon" href="../resources/favicon.ico">
-<script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
-<style>
-#main {
-    display: block;
-    margin: 0px auto;
-    text-align: center
-}
-#content {
-    display: inline-block;
-}
-#frames {
-    display: inline-block;
-    max-width: 180px;
-    vertical-align: top;
-}
-#startbuttons {
-    display: block;
-}
-#stopbuttons {
-    display: none;
-}
-#message {
-    ont-size: 24px;
-    font-family: "Gentium Basic", serif;
+  <title>Screen sharing</title>
+  <link rel="stylesheet" type="text/css" href="../resources/main.css">
+  <link rel="icon" href="../resources/favicon.ico">
+  <script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
+  <style>
+    .view-container {
+      margin: 0 20px;
     }
-h1 {
-    ont-size: 40px;
-    font-family: "Gentium Basic", serif;
-}
-input {
-    font-size: 28px;
-    font-family: "Gentium Basic", serif;
-}
-</style>
+    #sharing-button {
+      margin: 20px 0;
+    }
+    #error-display {
+      color: #f00;
+    }
+    input {
+      font-size: 28px;
+    }
+  </style>
 </head>
 <body>
-<div id="main">
-        <div class="navbar">
-            <img class="brand-line" src="../resources/ericsson_brandline.jpg">
-            <div class="navbar-container">
-              <a href="/c3-web-examples">
-                  <img class="navbar-logo" src="../resources/ECON_116px.png">
-                  <span class="navbar-title">Ericsson C3 Web examples</span>
-              </a>
-              <div id="homeServerBanner"></div>
-            </div>
-        </div>
-        <h2 class="navbar-title"><b>C3 Screen Share Example </b></h2>
-        <div id="startbuttons">
-          <input value="Screen" onclick="startScreen();" type="button">
-        </div>
-        <p id="extensionLinkAlert" style="color:red;"></p>
-        <video id="videoElement" style="height:100%; width:100%" autoplay="true" muted="true"></video>
-        <div style="display: none;" id="stopbuttons">
-          <input value="Stop" onclick="stopScreen();" type="button">
-        </div>
-</div>
-<script type="application/javascript">
-var isVideoEnabled = false;
-var stop = document.getElementById("stopbuttons");
-let chromeExtensionId = 'epajpkbdigdpepgncdpmilaoamkjgoah'
-let extensionUrl = `https://chrome.google.com/webstore/detail/${chromeExtensionId}`
+  <div class="navbar">
+    <img class="brand-line" src="../resources/ericsson_brandline.jpg">
+    <div class="navbar-container">
+      <a href="/c3-web-examples">
+        <img class="navbar-logo" src="../resources/ECON_116px.png">
+        <span class="navbar-title">Ericsson C3 Web examples</span>
+      </a>
+      <div id="homeServerBanner"></div>
+    </div>
+  </div>
+  <div class="about">
+    <h3>Screen sharing example</h3>
+    This example shows how to use a <a href="https://get.cct.ericsson.net/latest/docs/reference/ScreenSource.html" target="_blank">ScreenSource</a>. The code for the Chrome extension can be found <a href="https://github.com/Ericsson/c3-web-examples/tree/gh-pages/screen-sharing/chrome-extension" target="_blank">here</a>, and Firefox <a href="https://github.com/Ericsson/c3-web-examples/tree/gh-pages/screen-sharing/firefox-extension" target="_blank">here</a>.
+  </div>
+  <div class="view-container">
+    <div>
+      <a href="https://chrome.google.com/webstore/detail/c3-example-extension/epajpkbdigdpepgncdpmilaoamkjgoah" target="_blank">
+        Chrome extension
+      </a>
+    </div>
+    <div>
+      <a href="firefox-extension/ericsson_c3_screen_sharing-0.0.1-fx.xpi" target="_blank">
+        Firefox extension
+      </a>
+    </div>
+    <input value="Start screen sharing" id="sharing-button" type="button">
+    <div id="error-display"></div>
+    <video autoplay muted></video>
+  </div>
+  <footer id="footer">
+    <p>
+    <span style="position: relative; left: 5vw;">&copy; Ericsson 2016</span>
+    </p>
+    <div id="log" class='list-group'></div>
+  </footer>
+  <script type="application/javascript">
+'use strict'
 
-const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor)
+cct.log.setLogLevel(cct.log.ALL)
+cct.log.color = true
 
-if (isChrome){
-  document.getElementById("extensionLinkAlert").innerHTML =
-    `<h3>
-      Screen sharing extension is not installed. Get it from the <a target='_blank' href=${extensionUrl}>Chrome web store</a>.
-    </h3>`
+var el = {
+  button: document.getElementById('sharing-button'),
+  error: document.getElementById('error-display'),
+  video: document.querySelector('video'),
 }
 
-function startScreen(){
-  screenshareSource = new cct.ScreenSource({
-    chromeExtensionId: 'epajpkbdigdpepgncdpmilaoamkjgoah',
-    audio: false
-    }
-  );
-  screenshareSource.connect(videoElement);
-  screenshareSource.once('error', error => {
-    console.log('screen sharing failed:', error);
-  });
-  stop.style.display = "block";
-  isVideoEnabled = true;
-}
+var screenshareSource
 
-function stopScreen(){
-  if (isVideoEnabled) {
-    if (videoElement) {
-      screenshareSource.disconnect(videoElement);
-    }
+el.button.addEventListener('click', function () {
+  if (screenshareSource) {
+    screenshareSource.stop()
+    screenshareSource = null
+    el.button.value = 'Start screen sharing'
+  } else {
+    el.button.disabled = true
+
+    screenshareSource = new cct.ScreenSource({
+      chromeExtensionId: 'epajpkbdigdpepgncdpmilaoamkjgoah',
+      audio: false,
+      video: {
+        frameRate: 5,
+      },
+    })
+    screenshareSource.connect(el.video)
+    screenshareSource.promise.then(function () {
+      cct.log.info('example', 'screen sharing started successfully')
+      el.button.value = 'Stop screen sharing'
+      el.button.disabled = false
+    }, function (error) {
+      cct.log.info('example', 'screen sharing failed, ' + error)
+      el.error.textContent = error.toString()
+      screenshareSource = null
+    })
   }
-  isVideoEnabled = false;
-  stop.style.display = "none";
-}
-</script>
-      <footer id="footer">
-        <p>
-        <span style="position: relative; left: 5vw;">&copy Ericsson 2016</span>
-        </p>
-        <div id="log" class='list-group'></div>
-    </footer>
-  </body>
+})
+  </script>
+</body>
 </html>
