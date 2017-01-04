@@ -17,74 +17,78 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Local Call</title>
-<link rel="stylesheet" type="text/css" href="../resources/main.css">
-<link rel="icon" href="../resources/favicon.ico">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/3.2.1/es6-promise.min.js"></script>
-<script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
-<script type="text/javascript" src="../exampleUtils.js"></script>
+  <title>Local Call</title>
+  <link rel="stylesheet" type="text/css" href="../resources/main.css">
+  <link rel="icon" href="../resources/favicon.ico">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/3.2.1/es6-promise.min.js"></script>
+  <script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
+  <script type="text/javascript" src="../exampleUtils.js"></script>
 </head>
 <body>
-<div class="navbar">
+  <div class="navbar">
     <img class="brand-line" src="../resources/ericsson_brandline.jpg">
     <div class="navbar-container">
       <a href="/c3-web-examples">
-          <img class="navbar-logo" src="../resources/ECON_116px.png">
-          <span class="navbar-title">Ericsson C3 Web examples</span>
+        <img class="navbar-logo" src="../resources/ECON_116px.png">
+        <span class="navbar-title">Ericsson C3 Web examples</span>
       </a>
       <div id="homeServerBanner"></div>
     </div>
-</div>
-<div class="contentContainer">
-<div class="about">
-	<h3>Local Call example</h3>
-	This example shows how to connect two <a href="https://get.cct.ericsson.net/latest/docs/reference/Client.html">clients</a>
-	together through a <a href="https://get.cct.ericsson.net/latest/docs/reference/Room.html">room</a>. Once they both have
-	joined the room, a peer-2-peer WebRTC <a href="https://get.cct.ericsson.net/latest/docs/reference/Room.html#startCall__anchor">call</a>
-	is set up.
-</div>
-<div class="view-container">
-<div class="self-video-container">
+  </div>
+  <div class="contentContainer">
+  <div class="about">
+    <h3>Local Call example</h3>
+    This example shows how to connect two <a href="https://get.cct.ericsson.net/latest/docs/reference/Client.html">clients</a>
+    together through a <a href="https://get.cct.ericsson.net/latest/docs/reference/Room.html">room</a>. Once they both have
+    joined the room, a peer-2-peer WebRTC <a href="https://get.cct.ericsson.net/latest/docs/reference/Room.html#startCall__anchor">call</a>
+    is set up.
+  </div>
+  <div class="view-container">
+  <div class="self-video-container">
     <video muted="true" id="self1" autoplay></video>
     <div class="footer-block"><p>Self view 1</p></div>
-</div>
-</div>
-<div class="view-container">
-<div class="self-video-container">
+  </div>
+  </div>
+  <div class="view-container">
+  <div class="self-video-container">
     <video muted="true" id="self2" autoplay></video>
     <div class="footer-block"><p>Self view 2</p></div>
-</div>
-</div>
-<div class="view-container">
-<div class="remote-video-container">
+  </div>
+  </div>
+  <div class="view-container">
+  <div class="remote-video-container">
     <video muted="true" id="remote1" autoplay></video>
     <div class="footer-block"><p>Remote view 1</p></div>
-</div>
-</div>
-<div class="view-container">
-<div class="remote-video-container">
+  </div>
+  </div>
+  <div class="view-container">
+  <div class="remote-video-container">
     <video muted="true" id="remote2" autoplay></video>
     <div class="footer-block"><p>Remote view 2</p></div>
-</div>
-</div>
-</div>
-<footer id="footer">
+  </div>
+  </div>
+  </div>
+  <footer id="footer">
     <p>
-		<span style="position: relative; left: 5vw;">&copy Ericsson 2016</span>
-	    <input type=button id="toggleLog" onClick="toggleLog()" value="show log"></input>
+    <span style="position: relative; left: 5vw;">&copy Ericsson 2016</span>
+      <input type=button id="toggleLog" onClick="toggleLog()" value="show log"></input>
     </p>
     <div id="log" class='list-group'></div>
-</footer>
-<script type="text/javascript">
-var self1 = document.getElementById('self1')
-var self2 = document.getElementById('self2')
-var remote1 = document.getElementById('remote1')
-var remote2 = document.getElementById('remote2')
+  </footer>
+  <script type="text/javascript">
+'use strict'
 
 cct.log.setLogLevel(cct.log.ALL)
 cct.log.setLogLevel('events', cct.log.NONE)
 cct.log.setLogLevel('own-events', cct.log.NONE)
 cct.log.color = true
+
+var el = {
+  self1: document.getElementById('self1'),
+  self2: document.getElementById('self2'),
+  remote1: document.getElementById('remote1'),
+  remote2: document.getElementById('remote2'),
+}
 
 var client1 = new cct.Client({
   iceServers: EXAMPLE_UTILS_ICE_SERVERS,
@@ -101,11 +105,10 @@ Promise.all([
 .then(setupCall)
 .catch(function (error) {
   cct.log.error('error', error)
-  logError('Failed to setup local call')
 })
 
 function joinCallRoom() {
-  cct.log.info('Setup', 'Joining the same room')
+  cct.log.info('empty', 'Joining the same room')
   return Promise.all([
     client1.createRoom({
       invite: client2.user,
@@ -116,6 +119,7 @@ function joinCallRoom() {
   ])
 }
 
+// global vars so we can inspect them in dev console
 var source1
 var source2
 var call1
@@ -124,16 +128,16 @@ var call2
 function setupCall(rooms) {
   source1 = new cct.DeviceSource()
   source2 = new cct.DeviceSource()
-  source1.connect(self1)
-  source2.connect(self2)
+  source1.connect(el.self1)
+  source2.connect(el.self2)
 
   call1 = rooms[0].startCall(client2.user.id)
   call1.setLocalSource('main', source1)
-  call1.getRemoteSource('main').connect(remote1)
+  call1.getRemoteSource('main').connect(el.remote1)
 
   call2 = rooms[1].startCall(client1.user.id)
   call2.setLocalSource('main', source2)
-  call2.getRemoteSource('main').connect(remote2)
+  call2.getRemoteSource('main').connect(el.remote2)
 }
 
 </script>
