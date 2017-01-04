@@ -17,160 +17,122 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Share input</title>
-<meta charset="UTF-8">
-<link rel="stylesheet" type="text/css" href="../resources/main.css">
-<link rel="icon" href="../resources/favicon.ico">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/3.2.1/es6-promise.min.js"></script>
-<script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
-<script type="text/javascript" src="../exampleUtils.js"></script>
-<style>
-table {
+  <title>Share input</title>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="../resources/main.css">
+  <link rel="icon" href="../resources/favicon.ico">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/3.2.1/es6-promise.min.js"></script>
+  <script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
+  <script type="text/javascript" src="../exampleUtils.js"></script>
+  <style>
+  table {
     float: left;
     margin-left: 30px;
-}
-</style>
+  }
+  </style>
 </head>
 <body>
-<div class="navbar">
+  <div class="navbar">
     <img class="brand-line" src="../resources/ericsson_brandline.jpg">
     <div class="navbar-container">
       <a href="/c3-web-examples">
-          <img class="navbar-logo" src="../resources/ECON_116px.png">
-          <span class="navbar-title">Ericsson C3 Web examples</span>
+        <img class="navbar-logo" src="../resources/ECON_116px.png">
+        <span class="navbar-title">Ericsson C3 Web examples</span>
       </a>
       <div id="homeServerBanner"></div>
     </div>
-</div>
+  </div>
 
-<div class="contentContainer">
+  <div class="contentContainer">
     <div class="about">
-        <h3>Share Input example</h3>
-        <p>
-            This example shows how to share form states with a peer. Once connected
-            to the room, the forms will automatically share data with
-            <a href="https://get.cct.ericsson.net/latest/docs/reference/RoomState.html">Room states</a>
-        </p>
+      <h3>Share Input example</h3>
+      <p>
+        This example shows how to share form states with a peer. Once connected to the room, the forms will automatically share data with <a href="https://get.cct.ericsson.net/latest/docs/reference/RoomState.html">Room states</a>
+      </p>
     </div>
     <div>
     <form id="form">
-        <table>
-            <tr>
-                <td>Name: </td>
-                <td><input type="text" cct-binding="name"></td>
-            </tr>
-            <tr>
-                <td>Password: </td>
-                <td><input type="password" cct-binding="password"></td>
-            </tr>
-            <tr>
-                <td>Email:</td>
-                <td><input type="email" cct-binding="email"></td>
-            </tr>
-            <tr>
-                <td>Number: </td>
-                <td><input type="number" cct-binding="number"></td>
-            </tr>
-            <tr>
-                <td>Date: </td>
-                <td><input type="date" cct-binding="date"></td>
-            </tr>
-            <tr>
-                <td>Comment: </td>
-                <td><textarea cct-binding="textarea"></textarea></td>
-            </tr>
-        </table>
-        <table>
-            <tr>
-                <td>Color: </td>
-                <td><input type="color" value="#FF0000" cct-binding="color"></td>
-            </tr>
-            <tr>
-                <td>Bonus: </td>
-                <td><input type="checkbox" cct-binding="checkbox"></td>
-            </tr>
-            <tr>
-                <td>Range: </td>
-                <td><input type="range" cct-binding="range"></td>
-            </tr>
-            <tr>
-                <td>Preference:</td>
-            </tr>
-            <tr>
-                <td>
-                    <input type="radio" name="taste" value="strawberry" checked cct-binding="taste1"> Strawberry<br>
-                    <input type="radio" name="taste" value="blueberry" checked cct-binding="taste2"> Blueberry<br>
-                    <input type="radio" name="taste" value="blackberry" checked cct-binding="taste3"> Blackberry<br>
-                </td>
-            </tr>
-        </table>
-
-
+      <table>
+        <tr>
+          <td>Name: </td>
+          <td><input type="text" cct-binding="name"></td>
+        </tr>
+        <tr>
+          <td>Password: </td>
+          <td><input type="password" cct-binding="password"></td>
+        </tr>
+        <tr>
+          <td>Email:</td>
+          <td><input type="email" cct-binding="email"></td>
+        </tr>
+        <tr>
+          <td>Number: </td>
+          <td><input type="number" cct-binding="number"></td>
+        </tr>
+        <tr>
+          <td>Date: </td>
+          <td><input type="date" cct-binding="date"></td>
+        </tr>
+        <tr>
+          <td>Comment: </td>
+          <td><textarea cct-binding="textarea"></textarea></td>
+        </tr>
+      </table>
+      <table>
+        <tr>
+          <td>Color: </td>
+          <td><input type="color" value="#FF0000" cct-binding="color"></td>
+        </tr>
+        <tr>
+          <td>Bonus: </td>
+          <td><input type="checkbox" cct-binding="checkbox"></td>
+        </tr>
+        <tr>
+          <td>Range: </td>
+          <td><input type="range" cct-binding="range"></td>
+        </tr>
+        <tr>
+          <td>Preference:</td>
+        </tr>
+        <tr>
+          <td>
+            <input type="radio" name="taste" value="strawberry" checked cct-binding="taste1"> Strawberry<br>
+            <input type="radio" name="taste" value="blueberry" checked cct-binding="taste2"> Blueberry<br>
+            <input type="radio" name="taste" value="blackberry" checked cct-binding="taste3"> Blackberry<br>
+          </td>
+        </tr>
+      </table>
     </form>
     </div>
-</div>
-<footer id="footer">
+  </div>
+  <footer id="footer">
     <p>
-        <span style="position: relative; left: 5vw;">&copy ERICSSON 2016</span>
-        <input type=button id="toggleLog" onClick="toggleLog()" value="show log"></input>
+      <span style="position: relative; left: 5vw;">&copy ERICSSON 2016</span>
+      <input type=button id="toggleLog" onClick="toggleLog()" value="show log"></input>
     </p>
     <div id="log" class='list-group'></div>
-</footer>
-<script>
-var form = document.getElementById('form')
+  </footer>
+  <script>
+'use strict'
 
-cct.log.setLogLevel(cct.log.ALL)
+cct.log.setLogLevel('example', cct.log.ALL)
 cct.log.color = true
+
+var el = {
+  form: document.getElementById('form'),
+}
 
 var client = new cct.Client()
 
-var peer = new Peer2Peer({
-  session: window.location.hash,
-  client: client,
-})
-peer.start()
-  .then(setupListeners)
-  .then(startSharing)
-  .catch(function (error) {
-    cct.log.error('error', error)
-    logError('Something went wrong')
-  })
+PeerConnecter.clientInRoom(client).then(function (connecter) {
+  var state = connecter.room.state('test')
+  var elements = el.form.querySelectorAll('[cct-binding]')
 
-function setupListeners() {
-  startSharing()
-  peer.room.on('join', function (user) {
-    console.log('User joined: ' + user)
-  })
-}
-
-function startSharing() {
-  var data = peer.room.state('test')
-  bindDataToForm(data, form)
-  reportChange(data, peer.client.user.id)
-}
-
-function reportChange(data, label) {
-  data.on('update', function (change) {
-    cct.log.debug('example', label + ' changed: ' + change.key + ' = ' + change.value)
-    log(label, 'change: ' + change.key + ' = ' + change.value)
-  })
-}
-
-function bindDataToForm(state, form) {
-  var elements = form.querySelectorAll('[cct-binding]')
-  elements = Array.prototype.slice.call(elements)
-  elements.forEach(function (element) {
+  Array.prototype.forEach.call(elements, function (element) {
     var key = element.getAttribute('cct-binding')
-    set(state.get(key))
 
-    function dispatch(type) {
-      var event = new CustomEvent(type, {
-        bubbles: true,
-      })
-      element.dispatchEvent(event)
-    }
-
-    function set(value) {
+    function updateInput(value) {
+      cct.log.debug('example', 'change: ' + key + ' = ' + value)
       if (!value && element.type !== 'checkbox') {
         return
       }
@@ -180,13 +142,16 @@ function bindDataToForm(state, form) {
         element.value = value
       }
       if (element.type === 'input') {
-        dispatch('input')
+        var event = new CustomEvent('input', {bubbles: true})
+        element.dispatchEvent(event)
       } else {
-        dispatch('change')
+        var event = new CustomEvent('change', {bubbles: true})
+        element.dispatchEvent(event)
       }
     }
 
-    state.on('update:' + key, set)
+    updateInput(state.get(key))
+    state.on('update:' + key, updateInput)
 
     if (element.type === 'checkbox' || element.type === 'radio') {
       element.addEventListener('change', function (event) {
@@ -210,7 +175,7 @@ function bindDataToForm(state, form) {
       })
     }
   })
-}
-</script>
+})
+  </script>
 <body>
 <html>
