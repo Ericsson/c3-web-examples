@@ -16,36 +16,109 @@
 
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Session handling</title>
-	<link rel="stylesheet" type="text/css" href="../resources/main.css">
-	<link rel="icon" href="../resources/favicon.ico">
+    <link rel="stylesheet" type="text/css" href="../resources/main.css">
+    <link rel="icon" href="../resources/favicon.ico">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/3.2.1/es6-promise.min.js"></script>
     <script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
     <script type="text/javascript" src="../exampleUtils.js"></script>
     <style type="text/css">
-        input {
-            height: 24px;
-            width: 220px;
-            max-width: 80%;
-        }
-        button {
-            margin-left: 156px;
-            margin-top: 10px;
-        }
-        label {
-            width: 150px;
-            margin-top: 3px;
-            float: left;
-        }
-        #main {
-          margin: 20px;
-        }
+      input {
+        height: 24px;
+        width: 220px;
+        max-width: 80%;
+      }
+      button {
+        margin-left: 156px;
+        margin-top: 10px;
+      }
+      label {
+        width: 150px;
+        margin-top: 3px;
+        float: left;
+      }
+      #main {
+        margin: 20px;
+      }
     </style>
+  </head>
+<body>
+  <div class="navbar">
+    <img class="brand-line" src="../resources/ericsson_brandline.jpg">
+    <div class="navbar-container">
+      <a href="/c3-web-examples">
+        <img class="navbar-logo" src="../resources/ECON_116px.png">
+        <span class="navbar-title">Ericsson C3 Web examples</span>
+      </a>
+      <div id="homeServerBanner"></div>
+    </div>
+  </div>
+  <div class="contentContainer">
+    <div id="main">
+      <div class="about">
+        <h2>Session handling example</h2>
+        This example shows how to save and load login sessions with
+        <a href="https://get.cct.ericsson.net/latest/docs/reference/Client.html#auth__anchor"><code>cct.Client.auth</code></a>
+        and
+        <a href="https://get.cct.ericsson.net/latest/docs/reference/Client.html#toc5__anchor"><code>cct.Client.authInfo</code></a>.
+        Try clicking "Create new session", then "Save session", and then reload the page.
+      </div>
+      <form id="create-session-form">
+        <ul>
+          <li>
+            <label>Current session</label><label id='current-session'>none</label>
+          </li>
+          <li>
+            <button type="submit" name="submit">Create new session</button>
+          </li>
+        </ul>
+      </form>
+      <form id="save-session-form">
+        <ul>
+          <li>
+            <button type="submit" name="submit" disabled>Save session</button>
+          </li>
+        </ul>
+      </form>
+      <form id="logout-session-form">
+        <ul>
+          <li>
+            <button type="submit" name="submit" disabled>Logout session</button>
+          </li>
+        </ul>
+      </form>
+      <br/>
+      <form id="restore-session-form">
+        <ul>
+          <li>
+            <label>Stored session</label><label id='available-session'>none</label>
+          </li>
+          <li>
+            <button type="submit" name="submit" disabled>Restore session</button>
+          </li>
+        </ul>
+      </form>
+      <form id="clear-session-form">
+        <ul>
+          <li>
+            <button type="submit" name="submit" disabled>Clear session</button>
+          </li>
+        </ul>
+      </form>
+    </div>
+  </div>
+  <footer id="footer">
+    <p>
+      <span style="position: relative; left: 5vw;">&copy Ericsson 2016</span>
+      <input type=button id="toggleLog" onClick="toggleLog()" value="show log"></input>
+    </p>
+    <div id="log" class='list-group'></div>
+  </footer>
 <script type="text/javascript">
+'use strict'
+
 cct.log.setLogLevel(cct.log.ALL)
-cct.log.setLogLevel('events', cct.log.NONE)
-cct.log.setLogLevel('own-events', cct.log.NONE)
 cct.log.color = true
 
 var STORAGE = window.sessionStorage
@@ -64,7 +137,7 @@ function loadSessionFromStorage() {
   try {
     return JSON.parse(jsonStr)
   } catch (error) {
-    log('Client', 'Failed to load session: ' + error.message)
+    cct.log.error('example', 'Failed to load session: ' + error.message)
     return null
   }
 }
@@ -117,49 +190,49 @@ function setStoredSession(authInfo) {
 // Event handlers
 
 function createSession(event) {
-  event.preventDefault && event.preventDefault()
+  event.preventDefault()
 
-  log('Client', 'Creating anonymous user')
+  cct.log.info('example', 'Creating anonymous user')
 
   cct.Auth.anonymous({serverUrl: getCctAddress()})
     .then(client.auth)
     .then(function (client) {
       setCurrentSession(client.authInfo)
-      log('Client', 'Created and saved session')
+      cct.log.info('example', 'Created and saved session')
     })
 }
 
 function saveSession(event) {
-  event.preventDefault && event.preventDefault()
+  event.preventDefault()
 
   saveSessionToStorage(client.authInfo)
   setStoredSession(client.authInfo)
-  log('Client', 'Saved current session')
+  cct.log.info('example', 'Saved current session')
 }
 
 function logoutSession(event) {
-  event.preventDefault && event.preventDefault()
+  event.preventDefault()
 
   client.logout()
   setCurrentSession(null)
-  log('Client', 'Logged out of current session')
+  cct.log.info('example', 'Logged out of current session')
 }
 
 function restoreSession(event) {
-  event.preventDefault && event.preventDefault()
+  event.preventDefault()
 
   client.auth(availableSession)
     .then(function (client) {
       setCurrentSession(client.authInfo)
-      log('Client', 'Restored session')
+      cct.log.info('example', 'Restored session')
     })
 }
 
 function clearSession(event) {
-  event.preventDefault && event.preventDefault()
+  event.preventDefault()
   setStoredSession(null)
   clearSessionStorage()
-  log('Client', 'Cleared the stored session')
+  cct.log.info('example', 'Cleared the stored session')
 }
 
 window.onload = function () {
@@ -178,80 +251,6 @@ window.onload = function () {
   var loadedSession = loadSessionFromStorage()
   setStoredSession(loadedSession)
 }
-
-</script>
-</head>
-<body>
-<div class="navbar">
-    <img class="brand-line" src="../resources/ericsson_brandline.jpg">
-    <div class="navbar-container">
-      <a href="/c3-web-examples">
-          <img class="navbar-logo" src="../resources/ECON_116px.png">
-          <span class="navbar-title">Ericsson C3 Web examples</span>
-      </a>
-      <div id="homeServerBanner"></div>
-    </div>
-</div>
-<div class="contentContainer">
-    <div id="main">
-        <div class="about">
-            <h2>Session handling example</h2>
-            This example shows how to save and load login sessions with
-            <a href="https://get.cct.ericsson.net/latest/docs/reference/Client.html#auth__anchor"><code>cct.Client.auth</code></a>
-            and
-            <a href="https://get.cct.ericsson.net/latest/docs/reference/Client.html#toc5__anchor"><code>cct.Client.authInfo</code></a>.
-            Try clicking "Create new session", then "Save session", and then reload the page.
-        </div>
-        <form id="create-session-form">
-            <ul>
-                <li>
-                    <label>Current session</label><label id='current-session'>none</label>
-                </li>
-                <li>
-                    <button type="submit" name="submit">Create new session</button>
-                </li>
-            </ul>
-        </form>
-        <form id="save-session-form">
-            <ul>
-                <li>
-                    <button type="submit" name="submit" disabled>Save session</button>
-                </li>
-            </ul>
-        </form>
-        <form id="logout-session-form">
-            <ul>
-                <li>
-                    <button type="submit" name="submit" disabled>Logout session</button>
-                </li>
-            </ul>
-        </form>
-        <br/>
-        <form id="restore-session-form">
-            <ul>
-                <li>
-                    <label>Stored session</label><label id='available-session'>none</label>
-                </li>
-                <li>
-                    <button type="submit" name="submit" disabled>Restore session</button>
-                </li>
-            </ul>
-        </form>
-        <form id="clear-session-form">
-            <ul>
-                <li>
-                    <button type="submit" name="submit" disabled>Clear session</button>
-                </li>
-            </ul>
-        </form>
-    </div>
-</div>
-<footer id="footer">
-    <p>
-		<span style="position: relative; left: 5vw;">&copy Ericsson 2016</span>
-	    <input type=button id="toggleLog" onClick="toggleLog()" value="show log"></input>
-    </p>
-    <div id="log" class='list-group'></div>
-</footer>
+  </script>
 </body>
 </html>
