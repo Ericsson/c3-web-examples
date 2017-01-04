@@ -20,129 +20,133 @@
   <title>Pin Session Setup</title>
   <link rel="stylesheet" type="text/css" href="../resources/main.css">
   <link rel="icon" href="../resources/favicon.ico">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/3.2.1/es6-promise.min.js"></script>
-    <script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
-    <script type="text/javascript" src="../exampleUtils.js"></script>
-    <style type="text/css">
-        #main {
-            margin: 20px;
-        }
-        #error-message {
-            color: #f00;
-            font-size: 2rem;
-        }
-        input {
-            height: 24px;
-            width: 220px;
-            max-width: 80%;
-        }
-        button {
-            margin-left: 156px;
-            margin-top: 10px;
-        }
-        label {
-            width: 150px;
-            margin-top: 3px;
-            float: left;
-        }
-    </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/3.2.1/es6-promise.min.js"></script>
+  <script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
+  <script type="text/javascript" src="../exampleUtils.js"></script>
+  <style type="text/css">
+    #main {
+      margin: 20px;
+    }
+    #error-message {
+      color: #f00;
+      font-size: 2rem;
+    }
+    input {
+      height: 24px;
+      width: 220px;
+      max-width: 80%;
+    }
+    button {
+      margin-left: 156px;
+      margin-top: 10px;
+    }
+    label {
+      width: 150px;
+      margin-top: 3px;
+      float: left;
+    }
+  </style>
 </head>
 <body>
-<div class="navbar">
+  <div class="navbar">
     <img class="brand-line" src="../resources/ericsson_brandline.jpg">
     <div class="navbar-container">
       <a href="/c3-web-examples">
-          <img class="navbar-logo" src="../resources/ECON_116px.png">
-          <span class="navbar-title">Ericsson C3 Web examples</span>
+        <img class="navbar-logo" src="../resources/ECON_116px.png">
+        <span class="navbar-title">Ericsson C3 Web examples</span>
       </a>
       <div id="homeServerBanner"></div>
     </div>
-</div>
-<div class="contentContainer">
+  </div>
+  <div class="contentContainer">
     <div class="about">
-        <h2>Pin Session Setup</h2>
-        A simple session setup example using pin codes and guest access via
-        <a href="https://get.cct.ericsson.net/latest/docs/reference/Auth.html#-static-guest__anchor"><code>cct.Auth.guest</code></a>.
+      <h2>Pin Session Setup</h2>
+      A simple session setup example using pin codes and guest access via
+      <a href="https://get.cct.ericsson.net/latest/docs/reference/Auth.html#-static-guest__anchor"><code>cct.Auth.guest</code></a>.
     </div>
     <div id="main">
-        <section id="error-message" hidden></section>
-        <section id="join-meeting">
-            <form id="join-room-form">
-                <ul>
-                    <li>
-                        <label>Enter PIN</label><input name="pin" type="number" required>
-                    </li>
-                    <li>
-                        <button type="submit">Join room</button>
-                    </li>
-                </ul>
-            </form>
-            <span>OR</span>
-            <form id="create-room-form">
-                <ul>
-                    <li>
-                        <button type="submit">Create room with random PIN</button>
-                    </li>
-                </ul>
-            </form>
-        </section>
-        <section id="inside-meeting" hidden>
-          <h1>In room with pin <span id="room-pin-label">345</span></h1>
-          Other users in the room:
-          <ul id="member-list"></ul>
-        </section>
+      <section id="error-message" hidden></section>
+      <section id="join-meeting">
+        <form id="join-room-form">
+          <ul>
+            <li>
+              <label>Enter PIN</label><input name="pin" type="number" required>
+            </li>
+            <li>
+              <button type="submit">Join room</button>
+            </li>
+          </ul>
+        </form>
+        <span>OR</span>
+        <form id="create-room-form">
+          <ul>
+            <li>
+              <button type="submit">Create room with random PIN</button>
+            </li>
+          </ul>
+        </form>
+      </section>
+      <section id="inside-meeting" hidden>
+        <h1>In room with pin <span id="room-pin-label">345</span></h1>
+        Other users in the room:
+        <ul id="member-list"></ul>
+      </section>
     </div>
-</div>
-<footer id="footer">
+  </div>
+  <footer id="footer">
     <p>
     <span style="position: relative; left: 5vw;">&copy Ericsson 2016</span>
       <input type=button id="toggleLog" onClick="toggleLog()" value="show log"></input>
     </p>
     <div id="log" class='list-group'></div>
-</footer>
-<script type="text/javascript">
+  </footer>
+  <script type="text/javascript">
+'use strict'
+
 cct.log.setLogLevel(cct.log.ALL)
 cct.log.setLogLevel('events', cct.log.NONE)
 cct.log.setLogLevel('own-events', cct.log.NONE)
 cct.log.color = true
 
-var errorMessageSection = document.getElementById('error-message')
-var joinMeetingSection = document.getElementById('join-meeting')
-var insideMeetingSection = document.getElementById('inside-meeting')
+var el = {
+  errorMessage: document.getElementById('error-message'),
+  joinMeeting: document.getElementById('join-meeting'),
+  insideMeeting: document.getElementById('inside-meeting'),
 
-var createRoomForm = document.getElementById('create-room-form')
-var joinRoomForm = document.getElementById('join-room-form')
-var roomPinLabel = document.getElementById('room-pin-label')
-var memberList = document.getElementById('member-list')
+  createRoomForm: document.getElementById('create-room-form'),
+  joinRoomForm: document.getElementById('join-room-form'),
+  roomPinLabel: document.getElementById('room-pin-label'),
+  memberList: document.getElementById('member-list'),
+}
 
 var MAX_CREATION_ATTEMPTS = 5
 var DATE_CODE_OFFSET = 1000 * 3600
 
 var client = new cct.Client()
 cct.Auth.anonymous({serverUrl: getCctAddress()})
-    .then(client.auth)
-    .then(connectControls)
-    .catch(handleError)
+  .then(client.auth)
+  .then(connectControls)
+  .catch(handleError)
 
 function connectControls() {
-    log('Setup', 'Authenticated as anonymous user')
+  cct.log.info('example', 'Authenticated as anonymous user')
 
-    createRoomForm.addEventListener('submit', function (event) {
-        event.preventDefault()
+  el.createRoomForm.addEventListener('submit', function (event) {
+    event.preventDefault()
 
-        createNewRoom()
-            .then(enterRoom)
-            .catch(handleError)
-    })
+    createNewRoom()
+      .then(enterRoom)
+      .catch(handleError)
+  })
 
-    joinRoomForm.addEventListener('submit', function (event) {
-        event.preventDefault()
+  el.joinRoomForm.addEventListener('submit', function (event) {
+    event.preventDefault()
 
-        var pin = event.target.elements.pin.value
-        findRoomByPin(pin)
-            .then(enterRoom)
-            .catch(handleError)
-    })
+    var pin = event.target.elements.pin.value
+    findRoomByPin(pin)
+      .then(enterRoom)
+      .catch(handleError)
+  })
 }
 
 // When creating or joining a room, a date code is added to the pin to create the alias.
@@ -154,120 +158,120 @@ function connectControls() {
 // This means that PIN codes valid for at least an hour, and at most two hours, assuming the
 // client clocks are in sync.
 function createNewRoom(attemptNumber) {
-    if (attemptNumber > MAX_CREATION_ATTEMPTS) {
-        throw new Error('Too many attempts with duplicate PIN, giving up')
-    }
-    joinMeetingSection.hidden = true
-    var pin = generatePin(6)
-    var dateCode = getDateCodeFromDate(new Date)
-    var alias = formatAlias(pin, dateCode)
+  if (attemptNumber > MAX_CREATION_ATTEMPTS) {
+    throw new Error('Too many attempts with duplicate PIN, giving up')
+  }
+  el.joinMeeting.hidden = true
+  var pin = generatePin(6)
+  var dateCode = getDateCodeFromDate(new Date)
+  var alias = formatAlias(pin, dateCode)
 
-    log('Setup', 'Creating room with random PIN: ' + pin + ', and date code: ' + dateCode)
-    return client.createRoom({
-        type: 'test-room',
-        name: pin,
-        alias: alias,
-        joinRule: 'open',
-        guestAccessRule: 'open',
-    }).catch(function (error) {
-        if (error.body.error === 'Room alias already taken') {
-            log('Setup', 'Pin already taken, retrying')
-            return createNewRoom((attemptNumber || 1) + 1)
-        } else {
-            throw error
-        }
-    })
+  cct.log.info('example', 'Creating room with random PIN: ' + pin + ', and date code: ' + dateCode)
+  return client.createRoom({
+    type: 'test-room',
+    name: pin,
+    alias: alias,
+    joinRule: 'open',
+    guestAccessRule: 'open',
+  }).catch(function (error) {
+    if (error.body.error === 'Room alias already taken') {
+      cct.log.info('example', 'Pin already taken, retrying')
+      return createNewRoom((attemptNumber || 1) + 1)
+    } else {
+      throw error
+    }
+  })
 }
 
 function findRoomByPin(pin) {
-    joinMeetingSection.hidden = true
-    log('Setup', 'joining room with pin ' + pin)
-    var now = new Date()
+  el.joinMeeting.hidden = true
+  cct.log.info('example', 'joining room with pin ' + pin)
+  var now = new Date()
 
-    // Always try current date code first
-    return tryJoiningPinWithDate(pin, now)
-        .then(function (room) {
-            if (room) {
-                return room
-            } else {
-                return Promise.all([
-                    // try previous and next date codes
-                    tryJoiningPinWithDate(pin, new Date(now.getTime() - DATE_CODE_OFFSET)),
-                    tryJoiningPinWithDate(pin, new Date(now.getTime() + DATE_CODE_OFFSET)),
-                ]).then(function (results) {
-                    return results[0] || results[1]
-                })
-            }
+  // Always try current date code first
+  return tryJoiningPinWithDate(pin, now)
+    .then(function (room) {
+      if (room) {
+        return room
+      } else {
+        return Promise.all([
+          // try previous and next date codes
+          tryJoiningPinWithDate(pin, new Date(now.getTime() - DATE_CODE_OFFSET)),
+          tryJoiningPinWithDate(pin, new Date(now.getTime() + DATE_CODE_OFFSET)),
+        ]).then(function (results) {
+          return results[0] || results[1]
         })
-        .then(function (room) {
-            if (room) {
-                return room.join()
-            } else {
-                throw new Error('Could not find any room with pin ' + pin)
-            }
-        })
+      }
+    })
+    .then(function (room) {
+      if (room) {
+        return room.join()
+      } else {
+        throw new Error('Could not find any room with pin ' + pin)
+      }
+    })
 }
 
 // Will resolve to null if the room is not found
 function tryJoiningPinWithDate(pin, date) {
-    var dateCode = getDateCodeFromDate(date)
-    var alias = formatAlias(pin, dateCode)
-    return client.fetchRoomByAlias(alias)
-        .catch(function (error) {
-            if (error.status === 404) {
-                return null
-            } else {
-                throw error
-            }
-        })
+  var dateCode = getDateCodeFromDate(date)
+  var alias = formatAlias(pin, dateCode)
+  return client.fetchRoomByAlias(alias)
+    .catch(function (error) {
+      if (error.status === 404) {
+        return null
+      } else {
+        throw error
+      }
+    })
 }
 
 // At this point we have joined the room and can start communicating. In this example we
 // simply just list the other users in the room.
 function enterRoom(room) {
-    insideMeetingSection.hidden = false
+  el.insideMeeting.hidden = false
 
-    roomPinLabel.textContent = room.name
+  el.roomPinLabel.textContent = room.name
 
-    render(room)
-    room.on('otherMembers', render)
+  render(room)
+  room.on('otherMembers', render)
 
-    function render() {
-        memberList.innerHTML = ''
-        room.otherMembers.forEach(function (user) {
-            var item = document.createElement('li')
-            item.textContent = user.id
-            memberList.appendChild(item)
-        })
-    }
+  function render() {
+    el.memberList.innerHTML = ''
+    room.otherMembers.forEach(function (user) {
+      var item = document.createElement('li')
+      item.textContent = user.id
+      el.memberList.appendChild(item)
+    })
+  }
 }
 
 function generatePin(length) {
-    return Math.random().toString(10).slice(2, 2 + length)
+  return Math.random().toString(10).slice(2, 2 + length)
 }
 
 // Returns a date code with the format YYMMDDHH, left-padding 1-digit values with '0'
 function getDateCodeFromDate(date) {
-    return [
-        date.getUTCFullYear().toString().slice(2),
-        ('0' + date.getUTCMonth()).slice(-2),
-        ('0' + date.getUTCDate()).slice(-2),
-        ('0' + date.getUTCHours()).slice(-2),
-    ].join('')
+  return [
+    date.getUTCFullYear().toString().slice(2),
+    ('0' + date.getUTCMonth()).slice(-2),
+    ('0' + date.getUTCDate()).slice(-2),
+    ('0' + date.getUTCHours()).slice(-2),
+  ].join('')
 }
 
 function formatAlias(pin, dateCode) {
-    return pin + '_' + dateCode
+  return pin + '_' + dateCode
 }
 
 function handleError(error) {
-    logError('' + error)
-    if (error instanceof Error || typeof(error) === 'string') {
-        errorMessageSection.textContent = '' + error
-    } else {
-        errorMessageSection.textContent = '' + JSON.stringify(error)
-    }
-    errorMessageSection.hidden = false
+  cct.log.error('example', '' + error)
+  if (error instanceof Error || typeof(error) === 'string') {
+    el.errorMessage.textContent = '' + error
+  } else {
+    el.errorMessage.textContent = '' + JSON.stringify(error)
+  }
+  el.errorMessage.hidden = false
 }
 
 </script>
