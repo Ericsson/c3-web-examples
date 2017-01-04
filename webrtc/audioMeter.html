@@ -17,45 +17,43 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
-<title>AudioMeter</title>
-<link rel="stylesheet" type="text/css" href="../resources/main.css">
-<link rel="icon" href="../resources/favicon.ico">
-<script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
-<script type="text/javascript" src="../exampleUtils.js"></script>
+  <meta charset="utf-8">
+  <title>AudioMeter</title>
+  <link rel="stylesheet" type="text/css" href="../resources/main.css">
+  <link rel="icon" href="../resources/favicon.ico">
+  <script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
+  <script type="text/javascript" src="../exampleUtils.js"></script>
 </head>
 <body>
-
-<div class="navbar">
+  <div class="navbar">
     <img class="brand-line" src="../resources/ericsson_brandline.jpg">
     <div class="navbar-container">
       <a href="/c3-web-examples">
-          <img class="navbar-logo" src="../resources/ECON_116px.png">
-          <span class="navbar-title">Ericsson C3 Web examples</span>
+        <img class="navbar-logo" src="../resources/ECON_116px.png">
+        <span class="navbar-title">Ericsson C3 Web examples</span>
       </a>
       <div id="homeServerBanner"></div>
     </div>
-</div>
-<div class="contentContainer">
-<div class="about">
-	<h3>AudioMeter example</h3>
-	This example shows how to use the <a href="https://get.cct.ericsson.net/latest/docs/reference/AudioMeter.html">AudioMeter</a>.
-  The blue bar shows the <a href="https://get.cct.ericsson.net/latest/docs/reference/AudioMeter.html#toc4__anchor">raw</a> audio,
-  while the small white bar shows the <a href="https://get.cct.ericsson.net/latest/docs/reference/AudioMeter.html#toc3__anchor">filtered</a> audio.
-  Audio levels are captured from your microphone using a <a href="https://get.cct.ericsson.net/latest/docs/reference/DeviceSource.html">DeviceSource</a>.
-</div>
-<div class="view-container">
-  <canvas id="canvas" width="400" height="20" style="border:1px solid black; margin-left: 25px;"></canvas>
-</div>
-</div>
-<footer id="footer">
-  <p>
-    <span style="position: relative; left: 5vw;">&copy Ericsson 2016</span>
-    <input type=button id="toggleLog" onClick="toggleLog()" value="show log"></input>
-  </p>
-  <div id="log" class='list-group'></div>
-</footer>
-<script>
+  </div>
+  <div class="contentContainer">
+  <div class="about">
+    <h3>AudioMeter example</h3>
+    This example shows how to use the <a href="https://get.cct.ericsson.net/latest/docs/reference/AudioMeter.html">AudioMeter</a>. The blue bar shows the <a href="https://get.cct.ericsson.net/latest/docs/reference/AudioMeter.html#toc4__anchor">raw</a> audio, while the small white bar shows the <a href="https://get.cct.ericsson.net/latest/docs/reference/AudioMeter.html#toc3__anchor">filtered</a> audio. Audio levels are captured from your microphone using a <a href="https://get.cct.ericsson.net/latest/docs/reference/DeviceSource.html">DeviceSource</a>.
+  </div>
+    <div class="view-container">
+      <canvas id="canvas" width="400" height="20" style="border:1px solid black; margin-left: 25px;"></canvas>
+    </div>
+  </div>
+  <footer id="footer">
+    <p>
+      <span style="position: relative; left: 5vw;">&copy Ericsson 2016</span>
+      <input type=button id="toggleLog" onClick="toggleLog()" value="show log"></input>
+    </p>
+    <div id="log" class='list-group'></div>
+  </footer>
+  <script>
+'use strict'
+
 var microphone = new cct.DeviceSource({
   audio: true,
 })
@@ -72,15 +70,15 @@ function draw() {
   var raw = audioMeter.raw
   var filtered = audioMeter.filtered
 
-  ctx.fillStyle = 'rgb(0, 0, 0)'
+  ctx.fillStyle = '#000'
   ctx.fillRect(0, 0, WIDTH, HEIGHT)
 
   var rawWidth = raw * WIDTH
-  ctx.fillStyle = 'rgb(50, 100, 255)'
+  ctx.fillStyle = '#36f'
   ctx.fillRect(0, 0, rawWidth, HEIGHT)
 
   var filteredWidth = filtered * WIDTH
-  ctx.fillStyle = 'rgb(255, 255, 255)'
+  ctx.fillStyle = '#fff'
   ctx.fillRect(filteredWidth, 0, 2, WIDTH)
 }
 
