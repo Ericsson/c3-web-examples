@@ -25,14 +25,21 @@
   <script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
   <script type="text/javascript" src="../exampleUtils.js"></script>
   <style type="text/css">
-    .view-container {
-      width: calc(100% - 40px);
-      margin: 20px;
-      display: flex;
-      flex-flow: row wrap;
-      justify-content: space-around;
+    #video-container {
+      flex: 0 1 auto;
+      position: relative;
+    }
+    #remote-view-container {
+      width: 100%;
+      height: 100%;
+    }
+    #self-view-container {
+      position: absolute;
+      left: 0;
+      top: 0;
     }
     #chat-container {
+      margin: 20px;
       min-width: 400px;
     }
     #chat-messages {
@@ -80,20 +87,6 @@
     #chat-form > * {
       font-size: 0.9em;
     }
-    #video-container {
-      position: relative;
-      flex: 0 1 720px;
-    }
-    #remote-view {
-      width: 100%;
-    }
-    #self-view {
-      position: absolute;
-      left: 0;
-      top: 0;
-      max-width: 20%;
-      height: auto;
-    }
   </style>
 </head>
 <body>
@@ -113,10 +106,16 @@
         <div class="peer-link-connection-state"></div>
       </div>
     </section>
-    <div class="view-container">
-      <div id="video-container">
-        <video id="remote-view"></video>
-        <video id="self-view" muted></video>
+    <section>
+      <div id="video-container" class="margins">
+        <div class="video-container large" id="remote-view-container">
+          <video id="remote-view" autoplay></video>
+          <label>Remote view</label>
+        </div>
+        <div class="video-container small" id="self-view-container">
+          <video id="self-view" muted autoplay></video>
+          <label>Self view</label>
+        </div>
       </div>
       <div id="chat-container">
         <div id="chat-messages">
@@ -127,7 +126,7 @@
           <button type="submit">Send</button>
         </form>
       </div>
-    </div>
+    </section>
     <footer></footer>
   </main>
 <script>
