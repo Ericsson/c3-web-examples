@@ -157,7 +157,7 @@ function setupConference() {
   client = new cct.Client({
     iceServers: EXAMPLE_UTILS_ICE_SERVERS,
   })
-  return PeerConnecter.clientInCall(client).then(function (connecter) {
+  return PeerConnecter.clientInRoom(client).then(function (connecter) {
     document.getElementById('link').value = window.location.href
 
     cct.log.info('example', 'setting up conference')
