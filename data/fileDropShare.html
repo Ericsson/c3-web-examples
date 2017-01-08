@@ -175,7 +175,7 @@ PeerConnecter.clientInCall(client).then(function (connecter) {
           fileTransfer.abort()
         }
         fileTransfer = transfer
-        log('Transfer', 'Transfer to ' + transfer.peerId)
+        cct.log.info('example', 'Transfer to ' + transfer.peerId)
         transfer.on('progress', function (progress) {
           el.progressBar.value = progress
         })
@@ -201,7 +201,7 @@ PeerConnecter.clientInCall(client).then(function (connecter) {
     if (!fileRef) {
       return
     }
-    log('files', 'Got new FileRef ', fileRef.name, fileRef)
+    cct.log.info('example', 'Got new FileRef ', fileRef.name, fileRef)
     fileRef.fetch().then(function (file) {
       showReceivedFileRef(fileRef)
     }).catch(function (error) {
