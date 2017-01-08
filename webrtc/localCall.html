@@ -23,6 +23,11 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/3.2.1/es6-promise.min.js"></script>
   <script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
   <script type="text/javascript" src="../exampleUtils.js"></script>
+  <style type="text/css">
+    .video-container {
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
   <header></header>
@@ -33,30 +38,26 @@
         This example shows how to connect two <a href="https://get.cct.ericsson.net/latest/docs/reference/Client.html">clients</a> together through a <a href="https://get.cct.ericsson.net/latest/docs/reference/Room.html">room</a>. Once they both have joined the room, a peer-2-peer WebRTC <a href="https://get.cct.ericsson.net/latest/docs/reference/Room.html#startCall__anchor">call</a> is set up.
       </div>
     </section>
-    <div class="view-container">
-    <div class="self-video-container">
-      <video muted="true" id="self1" autoplay></video>
-      <div class="footer-block"><p>Self view 1</p></div>
-    </div>
-    </div>
-    <div class="view-container">
-    <div class="self-video-container">
-      <video muted="true" id="self2" autoplay></video>
-      <div class="footer-block"><p>Self view 2</p></div>
-    </div>
-    </div>
-    <div class="view-container">
-    <div class="remote-video-container">
-      <video muted="true" id="remote1" autoplay></video>
-      <div class="footer-block"><p>Remote view 1</p></div>
-    </div>
-    </div>
-    <div class="view-container">
-    <div class="remote-video-container">
-      <video muted="true" id="remote2" autoplay></video>
-      <div class="footer-block"><p>Remote view 2</p></div>
-    </div>
-    </div>
+    <section>
+      <div class="video-container margins small">
+        <video id="self1" muted autoplay></video>
+        <label>Self view 1</label>
+      </div>
+      <div class="video-container margins small">
+        <video id="self2" muted autoplay></video>
+        <label>Self view 2</label>
+      </div>
+    </section>
+    <section>
+      <div class="video-container margins medium">
+        <video id="remote1" autoplay></video>
+        <label>Remote view 1</label>
+      </div>
+      <div class="video-container margins medium">
+        <video id="remote2" autoplay></video>
+        <label>Remote view 2</label>
+      </div>
+    </section>
     <footer></footer>
   </main>
   <script type="text/javascript">
