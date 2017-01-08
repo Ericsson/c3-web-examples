@@ -189,46 +189,6 @@ footer:after {
     color: #00285f;
     margin-left: 20px;
 }
-.hero-img {
-    height: 300px;
-    width: auto;
-    vertical-align: text-top;
-}
-.hero-title {
-    font-size: 70px;
-    color: #00285f;
-    font-weight: 700;
-    font-family: Lato, Monaco, Courier;
-    margin-top: 30px;
-}
-.hero-desc {
-    font-size: 17px;
-    color: #555;
-    text-transform: uppercase;
-}
-.buttons-unit {
-    margin-top: 60px;
-    text-align: center;
-    color: #00285f;
-}
-.button {
-    background: -webkit-linear-gradient(#194C92, #00285f);
-    background: linear-gradient(#194C92, #00285f);
-    border-radius: 4px;
-    padding: 8px 16px;
-    font-size: 18px;
-    font-weight: 400;
-    margin: 0 12px;
-    display: inline-block;
-    color: #fafafa;
-    text-decoration: none;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-    box-shadow: 0 1px 1px rgba(0,0,0,0.2);
-    text-decoration: none;
-}
-.button:hover {
-    box-shadow: 0 2px 2px rgba(0,0,0,0.3);
-}
 .divider {
     height: 2px;
     width: 50%;
@@ -401,16 +361,6 @@ button[disabled] {
 button[disabled]:hover {
     opacity: 1;
     cursor: default;
-}
-pre {
-    white-space: pre-wrap;
-    width: 96%;
-    margin-bottom: 24px;
-    overflow: hidden;
-    padding: 3px 10px;
-    -webkit-border-radius: 3px;
-    background-color: #eee;
-    border: 1px solid #ddd;
 }
 .warning {
     border: 1px solid #FBC736;
