@@ -22,17 +22,11 @@
   <link rel="icon" href="../resources/favicon.ico">
   <script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
   <style>
-    .view-container {
-      margin: 0 20px;
-    }
-    #sharing-button {
-      margin: 20px 0;
-    }
     #error-display {
       color: #f00;
     }
-    input {
-      font-size: 28px;
+    video {
+      width: 100%;
     }
   </style>
 </head>
@@ -45,7 +39,7 @@
         This example shows how to use a <a href="https://get.cct.ericsson.net/latest/docs/reference/ScreenSource.html" target="_blank">ScreenSource</a>. The code for the Chrome extension can be found <a href="https://github.com/Ericsson/c3-web-examples/tree/gh-pages/screen-sharing/chrome-extension" target="_blank">here</a>, and Firefox <a href="https://github.com/Ericsson/c3-web-examples/tree/gh-pages/screen-sharing/firefox-extension" target="_blank">here</a>.
       </div>
     </section>
-    <div class="view-container">
+    <div class="margins">
       <div>
         <a href="https://chrome.google.com/webstore/detail/c3-example-extension/epajpkbdigdpepgncdpmilaoamkjgoah" target="_blank">
           Chrome extension
@@ -56,7 +50,8 @@
           Firefox extension
         </a>
       </div>
-      <input value="Start screen sharing" id="sharing-button" type="button">
+      <br>
+      <button id="sharing-button">Start screen sharing</button>
       <div id="error-display"></div>
       <video autoplay muted></video>
     </div>
@@ -80,7 +75,7 @@ el.button.addEventListener('click', function () {
   if (screenshareSource) {
     screenshareSource.stop()
     screenshareSource = null
-    el.button.value = 'Start screen sharing'
+    el.button.textContent = 'Start screen sharing'
   } else {
     el.button.disabled = true
 
@@ -94,7 +89,7 @@ el.button.addEventListener('click', function () {
     screenshareSource.connect(el.video)
     screenshareSource.promise.then(function () {
       cct.log.info('example', 'screen sharing started successfully')
-      el.button.value = 'Stop screen sharing'
+      el.button.textContent = 'Stop screen sharing'
       el.button.disabled = false
     }, function (error) {
       cct.log.info('example', 'screen sharing failed, ' + error)
