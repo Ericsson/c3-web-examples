@@ -25,37 +25,38 @@
   <script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
   <script type="text/javascript" src="../exampleUtils.js"></script>
   <style type="text/css">
-    video.local {
-      height: 15%;
-      width: 10vw;
-    }
-    video.local.activespeaker {
-      border-style: solid;
-      border-color: red;
-      border-width: thin;
-      border-radius: 1vw;
-    }
-    video.remote {
-      width: 45vw;
-      height: 35vw;
-    }
-    .contentContainer {
-      text-align:center;
+    .activespeaker {
+      border: 2px solid #4f8;
+      border-radius: 10px;
+      box-sizing: border-box;
     }
   </style>
 </head>
 <body>
   <header></header>
-  <main>
-    <video class="remote" muted="true" id="remote" autoplay></video>
-    <hr/>
+  <main class="centered">
+    <br>
+    <div class="video-container large margins">
+      <video class="remote" id="remote" muted autoplay></video>
+      <label>Active speaker</label>
+    </div>
     <p>
       Click one of the videos below to make that user the "active speaker".
     </p>
-    <hr/>
-    <video class="local" muted="true" id="self1" autoplay></video>
-    <video class="local" muted="true" id="self2" autoplay></video>
-    <video class="local" muted="true" id="self3" autoplay></video>
+    <section>
+      <div class="video-container small margins">
+        <video id="self1" muted autoplay></video>
+        <label>Self view 1</label>
+      </div>
+      <div class="video-container small margins">
+        <video id="self2" muted autoplay></video>
+        <label>Self view 2</label>
+      </div>
+      <div class="video-container small margins">
+        <video id="self3" muted autoplay></video>
+        <label>Self view 3</label>
+      </div>
+    </section>
     <footer></footer>
   </main>
   <script type="text/javascript">

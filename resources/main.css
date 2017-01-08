@@ -216,6 +216,10 @@ footer:after {
     margin-left: 20px;
     margin-right: 20px;
 }
+.centered {
+    display: flex;
+    align-items: center;
+}
 .video-container {
     position: relative;
     width: auto;
