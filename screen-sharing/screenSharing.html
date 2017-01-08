@@ -38,26 +38,30 @@
 </head>
 <body>
   <header></header>
-  <div class="about">
-    <h3>Screen sharing example</h3>
-    This example shows how to use a <a href="https://get.cct.ericsson.net/latest/docs/reference/ScreenSource.html" target="_blank">ScreenSource</a>. The code for the Chrome extension can be found <a href="https://github.com/Ericsson/c3-web-examples/tree/gh-pages/screen-sharing/chrome-extension" target="_blank">here</a>, and Firefox <a href="https://github.com/Ericsson/c3-web-examples/tree/gh-pages/screen-sharing/firefox-extension" target="_blank">here</a>.
-  </div>
-  <div class="view-container">
-    <div>
-      <a href="https://chrome.google.com/webstore/detail/c3-example-extension/epajpkbdigdpepgncdpmilaoamkjgoah" target="_blank">
-        Chrome extension
-      </a>
+  <main>
+    <section>
+      <div class="about">
+        <h3>Screen sharing example</h3>
+        This example shows how to use a <a href="https://get.cct.ericsson.net/latest/docs/reference/ScreenSource.html" target="_blank">ScreenSource</a>. The code for the Chrome extension can be found <a href="https://github.com/Ericsson/c3-web-examples/tree/gh-pages/screen-sharing/chrome-extension" target="_blank">here</a>, and Firefox <a href="https://github.com/Ericsson/c3-web-examples/tree/gh-pages/screen-sharing/firefox-extension" target="_blank">here</a>.
+      </div>
+    </section>
+    <div class="view-container">
+      <div>
+        <a href="https://chrome.google.com/webstore/detail/c3-example-extension/epajpkbdigdpepgncdpmilaoamkjgoah" target="_blank">
+          Chrome extension
+        </a>
+      </div>
+      <div>
+        <a href="firefox-extension/ericsson_c3_screen_sharing-0.0.1-fx.xpi" target="_blank">
+          Firefox extension
+        </a>
+      </div>
+      <input value="Start screen sharing" id="sharing-button" type="button">
+      <div id="error-display"></div>
+      <video autoplay muted></video>
     </div>
-    <div>
-      <a href="firefox-extension/ericsson_c3_screen_sharing-0.0.1-fx.xpi" target="_blank">
-        Firefox extension
-      </a>
-    </div>
-    <input value="Start screen sharing" id="sharing-button" type="button">
-    <div id="error-display"></div>
-    <video autoplay muted></video>
-  </div>
-  <footer></footer>
+    <footer></footer>
+  </main>
   <script type="application/javascript">
 'use strict'
 
