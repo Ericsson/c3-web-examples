@@ -211,6 +211,11 @@ footer:after {
     margin: 20px;
     margin-bottom: 0;
 }
+.peer-link-title {
+}
+.peer-link-input {
+    display: none;
+}
 .peer-link-connection-state {
     margin-top: 10px;
     font-size: 1.2em;

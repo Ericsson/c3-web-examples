@@ -17,28 +17,25 @@
 'use strict'
 
 function setPeerLink(shouldIncludeLink, message) {
-  var peerLink = document.querySelector('.peer-link')
-  if (peerLink) {
-    var description = peerLink.appendChild(document.createElement('h3'))
-    description.textContent = message
+  var peerLinkTitle = document.querySelector('.peer-link-title')
+  var peerLinkInput = document.querySelector('.peer-link-input')
+  if (peerLinkTitle) {
+    peerLinkTitle.textContent = message
+  }
+  if (peerLinkInput) {
     if (shouldIncludeLink) {
-      var link = peerLink.appendChild(document.createElement('input'))
-      link.type = 'text'
-      link.size = 60
-      link.value = location.href
-      link.onclick = link.select
+      peerLinkInput.type = 'text'
+      peerLinkInput.size = 60
+      peerLinkInput.value = location.href
+      peerLinkInput.onclick = peerLinkInput.select
+      peerLinkInput.style.display = 'initial'
     }
   }
 }
 
 function setPeerConnectionState(connectionState) {
-  var peerLink = document.querySelector('.peer-link')
-  if (peerLink) {
-    var connectionStateText = peerLink.querySelector('.peer-link-connection-state')
-    if (!connectionStateText) {
-      connectionStateText = peerLink.appendChild(document.createElement('div'))
-      connectionStateText.classList.add('peer-link-connection-state')
-    }
+  var connectionStateText = document.querySelector('.peer-link-connection-state')
+  if (connectionStateText) {
     if (connectionState === 'connected') {
       connectionStateText.textContent = 'Connected'
       connectionStateText.style.color = '#0f0'
