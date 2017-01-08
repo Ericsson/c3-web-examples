@@ -25,18 +25,30 @@
   <script type="text/javascript" src="../exampleUtils.js"></script>
   <style type="text/css">
     input {
-      height: 24px;
-      width: 220px;
-      max-width: 80%;
+      flex: 0 1 220px;
     }
     button {
-      margin-left: 156px;
-      margin-top: 10px;
+      margin-right: 150px;
     }
     label {
-      width: 150px;
-      margin-top: 3px;
-      float: left;
+      color: #555;
+      flex: 0 0 140px;
+      margin-bottom: 3px;
+    }
+    .registation-form {
+      flex: 0 1 400px;
+      display: flex;
+      flex-flow: column nowrap;
+      align-items: stretch;
+    }
+    .registation-form-row {
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: space-between;
+      margin: 5px 0;
+    }
+    #status {
+      margin-left: 20px;
     }
   </style>
 </head>
@@ -49,28 +61,31 @@
         This example shows how to register new user on the server using the <a href="https://get.cct.ericsson.net/latest/docs/reference/Auth.html#-static-registerWithPassword__anchor"><code>cct.Auth.registerWithPassword</code></a> method.
       </div>
     </section>
-    <div id="register">
-      <form id="reg-form">
-        <ul>
-          <li>
-            <label>Display Name</label><input name="displayName" type="text" required>
-          </li>
-          <li>
-            <label>Username</label><input name="username" type="text" required>
-          </li>
-          <li>
-            <label>Password</label><input name="password" type="password" required>
-          </li>
-          <li>
-            <label><i>Shared Secret</i></label><input name="secret" type="text" placeholder="Optional">
-          </li>
-          <li>
-            <button type="submit">Register</button>
-          </li>
-        </ul>
+    <section>
+      <form class="registation-form margins">
+        <div class="registation-form-row">
+          <label>Display Name</label>
+          <input name="displayName" type="text" required>
+        </div>
+        <div class="registation-form-row">
+          <label>Username</label>
+          <input name="username" type="text" required>
+        </div>
+        <div class="registation-form-row">
+          <label>Password</label>
+          <input name="password" type="password" required>
+        </div>
+        <div class="registation-form-row">
+          <label><i>Shared Secret</i></label>
+          <input name="secret" type="text" placeholder="Optional">
+        </div>
+        <div class="registation-form-row">
+          <label></label>
+          <button type="submit">Register</button>
+        </div>
       </form>
-      <div id="status"></div>
-    </div>
+      <h3 id="status"></h3>
+    </section>
     <footer></footer>
   </main>
   <script type="text/javascript">
@@ -80,7 +95,7 @@ cct.log.setLogLevel(cct.log.ALL)
 cct.log.color = true
 
 var el = {
-  form: document.getElementById('reg-form'),
+  form: document.querySelector('.registation-form'),
   status: document.getElementById('status'),
 }
 
