@@ -56,7 +56,7 @@
 </head>
 <body>
   <header></header>
-  <div class="contentContainer">
+  <main>
     <div class="about">
       <h3>Shared Cursor example</h3>
       This example shows how to connect two <a href="https://get.cct.ericsson.net/latest/docs/reference/Client.html"></a> together through a <a href="https://get.cct.ericsson.net/latest/docs/reference/Room.html">room</a>. Once they both have joined the room, a peer-2-peer WebRTC <a href="https://get.cct.ericsson.net/latest/docs/reference/Room.html#startCall__anchor">call</a> is set up. Once the call is set up a <a href="https://get.cct.ericsson.net/latest/docs/reference/DataShare.html">DataShare</a> is created between the two clients sending their respective cursor data to eachother.
@@ -67,8 +67,8 @@
       <div class="mouseIndicator" id="self"><p>self</p></div>
       <div class="mouseIndicator" id="remote"><p>remote</p></div>
     </div>
-  </div>
-  <footer></footer>
+    <footer></footer>
+  </main>
   <script>
 'use strict'
 

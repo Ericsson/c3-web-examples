@@ -31,19 +31,19 @@
 </head>
 <body>
   <header></header>
-  <div class="contentContainer">
-  <div class="about">
-    <h3>Audio Detection example</h3>
-    This example shows how to use an <a href="https://get.cct.ericsson.net/latest/docs/reference/AudioMeter.html">AudioMeter</a> to detect if your microphone is working correctly. It also shows how to deal with various problems that can occur when requesting microphone access.
-  </div>
-  <div class="view-container">
-    <button onclick="setup()">Request Microphone</button>
-    <div id="indicatorContainer">
-      <p id="indicatorText" style="color:white;"></p>
+  <main>
+    <div class="about">
+      <h3>Audio Detection example</h3>
+      This example shows how to use an <a href="https://get.cct.ericsson.net/latest/docs/reference/AudioMeter.html">AudioMeter</a> to detect if your microphone is working correctly. It also shows how to deal with various problems that can occur when requesting microphone access.
     </div>
-  </div>
-  </div>
-  <footer></footer>
+    <div class="view-container">
+      <button onclick="setup()">Request Microphone</button>
+      <div id="indicatorContainer">
+        <p id="indicatorText" style="color:white;"></p>
+      </div>
+    </div>
+    <footer></footer>
+  </main>
 <script>
 'use strict'
 
