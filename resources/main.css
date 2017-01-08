@@ -75,6 +75,7 @@ img {
     max-height: 500px;
 }
 button {
+    margin: 3px 0;
     background-color: #68b12f;
     background: -webkit-gradient(linear, left top, left bottom, from(#68b12f), to(#50911e));
     background: -webkit-linear-gradient(top, #68b12f, #50911e);
