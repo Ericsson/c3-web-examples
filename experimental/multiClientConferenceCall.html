@@ -25,44 +25,11 @@
   <script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
   <script type="text/javascript" src="../exampleUtils.js"></script>
   <style>
-    #videoContainer {
-      height: 80vh;
-    }
-    #bigVideo {
-      max-width: 100vw;
-    }
-    #selfVideo {
-      position: absolute;
-      z-index: 1;
-      left: 1vw;
-      bottom: 3vw;
-      max-width: 16vw;
-      max-height: 9vw;
-      border: solid white 1px;
-    }
-    #remoteVideoContainer {
-      position: absolute;
-      width: 16vw;
-      z-index: 1;
-      right: 2vw;
-      bottom: 3vw;
-      display: flex;
-      flex-direction: column;
-    }
-    #controlsContainer {
-      position: absolute;
-      left: 40%;
-      z-index: 1;
-      bottom: 3vw;
-    }
     .remoteVideo {
       max-width: 16vw;
       max-height: 9vw;
       margin-top: 1vw;
       border: solid white 1px;
-    }
-    #link-container {
-      margin: 20px;
     }
   </style>
 </head>
@@ -79,14 +46,20 @@
         <input class="peer-link-input" type="url" value="" size="55">
       </div>
     </section>
-    <div id="videoContainer">
-      <div id="remoteVideoContainer"></div>
-      <div id="controlsContainer">
-        <button type="button" id="audioButton">Microphone: On</button>
-        <button type="button"  id="videoButton">Camera: On</button>
+    <div class="margins centered column">
+      <div class="video-container small">
+        <video id="selfVideo" muted autoplay></video>
+        <label>Self view</label>
       </div>
-      <video id="selfVideo" autoplay muted></video>
-      <video id="bigVideo" autoplay muted></video>
+      <div class="video-container large">
+        <video id="bigVideo" muted autoplay></video>
+        <label>Active speaker</label>
+      </div>
+      <div id="remoteVideoContainer" class="row"></div>
+      <div id="controlsContainer" class="row">
+        <button class="margins" type="button" id="audioButton">Microphone: On</button>
+        <button class="margins" type="button"  id="videoButton">Camera: On</button>
+      </div>
     </div>
     <footer></footer>
   </main>
