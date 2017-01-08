@@ -44,6 +44,12 @@ label {
 input {
     padding: 5px 8px;
 }
+section {
+    display: flex;
+    flex-flow: row wrap;
+    flex: 1 0 auto;
+    margin-bottom: 20px;
+}
 ul {
     list-style: none;
     padding: 0;
@@ -190,19 +196,24 @@ footer:after {
     ##    ## ##       ##     ## ##    ## ##    ## ##       ##    ##
      ######  ######## ##     ##  ######   ######  ########  ######
 */
-
 .about {
+    flex: 0 1 620px;
+    margin: 20px;
+    margin-bottom: 0;
     background-color: #F0F8FC;
     border: 1px solid #466493;
     padding: 10px;
     border-radius: 5px;
     color: #466493;
-    max-width: 50%;
-    margin: 20px;
 }
-.about p {
-    margin-top: 8px;
-    margin-bottom: 0px;
+.peer-link {
+    flex: 0 1 auto;
+    margin: 20px;
+    margin-bottom: 0;
+}
+.peer-link-connection-state {
+    margin-top: 10px;
+    font-size: 1.2em;
 }
 .contentContainer {
     position: relative;
