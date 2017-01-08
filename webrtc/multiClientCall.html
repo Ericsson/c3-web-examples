@@ -25,9 +25,6 @@
   <script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
   <script type="text/javascript" src="../exampleUtils.js"></script>
   <style type="text/css">
-    .link-container {
-      margin: 20px;
-    }
     .view-container {
       width: calc(100% - 40px);
       margin: 20px;
@@ -83,13 +80,6 @@
     #chat-form > * {
       font-size: 0.9em;
     }
-    .topContainer {
-      display: flex;
-      flex-flow: row wrap;
-    }
-    .about {
-      min-width: 480px;
-    }
     #video-container {
       position: relative;
       flex: 0 1 720px;
@@ -119,9 +109,10 @@
           Once both have joined the room, a peer-2-peer WebRTC <a href="https://get.cct.ericsson.net/latest/docs/reference/Room.html#startCall__anchor">call</a> is set up. Users can also chat with each other.
         </p>
       </div>
-      <div class='link-container'>
-        <p>Send link to a friend</p>
-        <input id="link" type="text" value="" size="55">
+      <div class="peer-link">
+        <h3 class="peer-link-title"></h3>
+        <input class="peer-link-input" type="url" value="" size="55">
+        <div class="peer-link-connection-state"></div>
       </div>
     </section>
     <div class="view-container">
@@ -153,7 +144,6 @@ var el = {
   chatText: document.getElementById('chat-text'),
   chatForm: document.getElementById('chat-form'),
   chatMessages: document.getElementById('chat-messages'),
-  link: document.getElementById('link'),
   selfView: document.getElementById('self-view'),
   remoteView: document.getElementById('remote-view'),
 }
@@ -164,8 +154,6 @@ deviceSource.connect(el.selfView)
 var client = new cct.Client()
 
 PeerConnecter.clientInCall(client).then(function (connecter) {
-  el.link.value = window.location.href
-
   var room = connecter.room
   var call = connecter.call
 

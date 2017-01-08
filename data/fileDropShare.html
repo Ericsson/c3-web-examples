@@ -51,9 +51,6 @@
       width: 100%;
       cursor: default;
     }
-    #isConnected {
-      color: #f00;
-    }
     #content {
       display: flex;
       flex-direction: column;
@@ -79,12 +76,10 @@
           This example shows how to transfer files between two remotely connected <a href="https://get.cct.ericsson.net/latest/docs/reference/Client.html"><code>Clients</code></a> using the <a href="https://get.cct.ericsson.net/latest/docs/reference/FileRef.html"><code>FileRef</code></a> API. Drag and drop a file in the image drop when you are connected to a peer to transfer a file. When the transfer is finished, then the image will be displayed on the peer's screen. Open the 'log' window in the bottom right corner to see more details.
         </p>
       </div>
-    </section>
-    <div class="container">
-      <div id="linkContainer">
-        <div><p>Send link to a friend</p></div>
-        <input id="link" type="text" value="" size="55" readonly>
-        <p id="isConnected">Disconnected</p>
+      <div class="peer-link">
+        <h3 class="peer-link-title"></h3>
+        <input class="peer-link-input" type="url" value="" size="55">
+        <div class="peer-link-connection-state"></div>
         <div id="progress">
           <div>
             <span>Filename:  &nbsp;</span>
@@ -100,7 +95,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </section>
     <br>
     <div class="container">
       <div id="dropArea">
@@ -124,9 +119,7 @@ var el = {
   progressBar: document.getElementById('prog'),
   fileName: document.getElementById('filename'),
   downloadLink: document.getElementById('downloadLink'),
-  link: document.getElementById('link'),
   img: document.getElementById('img'),
-  connected: document.getElementById('isConnected'),
 }
 
 /* needed so that FF doesn't become confused */
@@ -148,19 +141,7 @@ document.body.addEventListener('drop', function (event) {
 var client = new cct.Client()
 
 PeerConnecter.clientInCall(client).then(function (connecter) {
-  el.link.value = window.location.href
-
   var call = connecter.call
-
-  call.on('connectionState', function (connectionState) {
-    if (connectionState === 'connected') {
-      el.connected.textContent = 'Connected'
-      el.connected.style.color = '#0f0'
-    } else {
-      el.connected.textContent = 'Disconnected'
-      el.connected.style.color = '#f00'
-    }
-  })
 
   var fileShare = new cct.FileShare()
   call.attach('files', fileShare)
