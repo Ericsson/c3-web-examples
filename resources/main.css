@@ -216,22 +216,6 @@ footer:after {
     margin-left: 20px;
     margin-right: 20px;
 }
-.contentContainer {
-    position: relative;
-    float:left;
-    clear:both;
-    width: 100%;
-    min-height: calc(100vh - 117px);
-    /* 115px is the same as the
-    navbar height + the footer height
-    which is being subtracted by
-    the footer (67 + 50)*/
-}
-.view-container {
-    position: relative;
-    float: left;
-    width: 50%;
-}
 .video-container {
     position: relative;
     width: auto;
@@ -262,60 +246,6 @@ footer:after {
     background-color: #fff;
     opacity: 0.5;
     color: #000;
-}
-.divider {
-    height: 2px;
-    width: 50%;
-    border-bottom: 1px #CCC solid;
-    margin: 30px auto;
-}
-.client {
-    position: relative;
-    float: left;
-    height: 20vh;
-    width: 49vw;
-    border: 2px solid #888;
-}
-.client * {
-    margin: 5px;
-    line-height: 14px;
-    height: 14px;
-    font-size: 14px;
-    box-sizing: initial;
-    top: 0;
-}
-#bottom {
-    width: 60%;
-    margin: auto;
-    padding-bottom: 100px;
-}
-#top {
-    margin-top: 60px;
-    width: 100%;
-    text-align: center;
-}
-#homeServerBanner {
-    height: auto;
-    margin: 18px 0px;
-    margin-left:auto;
-    margin-right: 18px;
-    align-self: flex-end;
-}
-#register {
-    padding-left: 20px;
-}
-@media (max-width: 700px) {
-    .navbar-container {
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-    }
-}
-@media (max-width: 700px) {
-    #homeServerBanner {
-      margin-left: 0;
-      margin: 0 auto;
-    }
 }
 .header-title {
     flex: 1 0 auto;
