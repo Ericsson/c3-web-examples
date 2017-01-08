@@ -37,10 +37,6 @@ h1, h2, h3 {
     font-weight: normal;
     margin: 5px 0 10px 0;
 }
-label {
-    display: inline-block;
-    padding: 3px;
-}
 input {
     padding: 5px 8px;
 }
