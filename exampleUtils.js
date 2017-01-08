@@ -16,6 +16,39 @@
 
 'use strict'
 
+function setPeerLink(shouldIncludeLink, message) {
+  var peerLink = document.querySelector('.peer-link')
+  if (peerLink) {
+    var description = peerLink.appendChild(document.createElement('h3'))
+    description.textContent = message
+    if (shouldIncludeLink) {
+      var link = peerLink.appendChild(document.createElement('input'))
+      link.type = 'text'
+      link.size = 60
+      link.value = location.href
+      link.onclick = link.select
+    }
+  }
+}
+
+function setPeerConnectionState(connectionState) {
+  var peerLink = document.querySelector('.peer-link')
+  if (peerLink) {
+    var connectionStateText = peerLink.querySelector('.peer-link-connection-state')
+    if (!connectionStateText) {
+      connectionStateText = peerLink.appendChild(document.createElement('div'))
+      connectionStateText.classList.add('peer-link-connection-state')
+    }
+    if (connectionState === 'connected') {
+      connectionStateText.textContent = 'Connected'
+      connectionStateText.style.color = '#0f0'
+    } else {
+      connectionStateText.textContent = 'Disconnected'
+      connectionStateText.style.color = '#f00'
+    }
+  }
+}
+
 function PeerConnecter(client) {
   if (!(client instanceof cct.Client)) {
     throw new TypeError('PeerConnecter client must be a cct.Client')
@@ -69,14 +102,17 @@ PeerConnecter.prototype.joinRoom = function () {
     if (existingRoom.membership === 'member') {
       if (existingRoom.creator === this.client.user) {
         cct.log.info('example', 'Found existing room as creator')
+        setPeerLink(true, 'You are the initiator, send this link to a friend')
       } else {
         cct.log.info('example', 'Found existing room as peer')
+        setPeerLink(false, 'You are joining an existing session')
       }
       this.room = existingRoom
       return Promise.resolve(this)
     }
 
     cct.log.info('example', 'Joining room as peer')
+    setPeerLink(false, 'You are joining an existing session')
     return this.client.fetchRoomById(roomId).then(function (room) {
       this.room = room
       return room.join()
@@ -90,6 +126,7 @@ PeerConnecter.prototype.joinRoom = function () {
     }).then(function (room) {
       this.room = room
       history.replaceState('', '', '#' + room.id)
+      setPeerLink(true, 'You are the initiator, send this link to a friend')
       return this
     }.bind(this))
   }
@@ -104,6 +141,8 @@ PeerConnecter.prototype.enterCall = function () {
   } else {
     this.call = this.room.startCall(this.room.creator)
   }
+  setPeerConnectionState(this.call.connectionState)
+  this.call.on('connectionState', setPeerConnectionState)
   return this
 }
 
