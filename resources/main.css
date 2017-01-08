@@ -220,6 +220,14 @@ footer:after {
     display: flex;
     align-items: center;
 }
+.column {
+    display: flex;
+    flex-flow: column nowrap;
+}
+.row {
+    display: flex;
+    flex-flow: row nowrap;
+}
 .video-container {
     position: relative;
     width: auto;
