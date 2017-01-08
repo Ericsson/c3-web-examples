@@ -362,10 +362,3 @@ button[disabled]:hover {
     opacity: 1;
     cursor: default;
 }
-.warning {
-    border: 1px solid #FBC736;
-    background-color: #F3E2AF;
-    border-radius: 8px;
-    padding: 14px;
-    color: #926E08;
-}
