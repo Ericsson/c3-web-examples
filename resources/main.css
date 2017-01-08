@@ -265,6 +265,7 @@ footer:after {
     font-size: 1.55em;
     color: #00285f;
     margin-left: 20px;
+    margin-top: 3px;
 }
 .header-server-input {
     flex: 0 0 auto;
