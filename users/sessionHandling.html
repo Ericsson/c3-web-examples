@@ -24,22 +24,21 @@
     <script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
     <script type="text/javascript" src="../exampleUtils.js"></script>
     <style type="text/css">
-      input {
-        height: 24px;
-        width: 220px;
-        max-width: 80%;
-      }
-      button {
-        margin-left: 156px;
-        margin-top: 10px;
-      }
-      label {
-        width: 150px;
-        margin-top: 3px;
-        float: left;
-      }
-      #main {
+      .session-form-group {
+        flex: 0 1 260px;
         margin: 20px;
+        margin-top: 0;
+      }
+      .session-display {
+        margin-bottom: 10px;
+      }
+      .session-display-user-id {
+        color: #666;
+        border: 1px solid #888;
+        border-radius: 5px;
+        padding: 0px 10px 5px 10px;
+        background: #fff;
+        word-break: break-all;
       }
     </style>
   </head>
@@ -52,48 +51,35 @@
         This example shows how to save and load login sessions with <a href="https://get.cct.ericsson.net/latest/docs/reference/Client.html#auth__anchor"><code>cct.Client.auth</code></a> and <a href="https://get.cct.ericsson.net/latest/docs/reference/Client.html#toc5__anchor"><code>cct.Client.authInfo</code></a>. Try clicking "Create new session", then "Save session", and then reload the page.
       </div>
     </section>
-    <form id="create-session-form">
-      <ul>
-        <li>
-          <label>Current session</label><label id='current-session'>none</label>
-        </li>
-        <li>
+    <section>
+      <div class="session-form-group">
+        <div class="session-display">
+          <h3>Current session</h3>
+          <div id='current-session' class="session-display-user-id">none</div>
+        </div>
+        <form id="create-session-form">
           <button type="submit" name="submit">Create new session</button>
-        </li>
-      </ul>
-    </form>
-    <form id="save-session-form">
-      <ul>
-        <li>
+        </form>
+        <form id="save-session-form">
           <button type="submit" name="submit" disabled>Save session</button>
-        </li>
-      </ul>
-    </form>
-    <form id="logout-session-form">
-      <ul>
-        <li>
+        </form>
+        <form id="logout-session-form">
           <button type="submit" name="submit" disabled>Logout session</button>
-        </li>
-      </ul>
-    </form>
-    <br/>
-    <form id="restore-session-form">
-      <ul>
-        <li>
-          <label>Stored session</label><label id='available-session'>none</label>
-        </li>
-        <li>
+        </form>
+      </div>
+      <div class="session-form-group">
+        <div class="session-display">
+          <h3>Stored session</h3>
+          <div id='available-session' class="session-display-user-id">none</div>
+        </div>
+        <form id="restore-session-form">
           <button type="submit" name="submit" disabled>Restore session</button>
-        </li>
-      </ul>
-    </form>
-    <form id="clear-session-form">
-      <ul>
-        <li>
+        </form>
+        <form id="clear-session-form">
           <button type="submit" name="submit" disabled>Clear session</button>
-        </li>
-      </ul>
-    </form>
+        </form>
+      </div>
+    </section>
     <footer></footer>
   </main>
 <script type="text/javascript">
