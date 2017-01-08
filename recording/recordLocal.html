@@ -24,18 +24,6 @@
   <script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
   <script type="text/javascript" src="../exampleUtils.js"></script>
   <script type="text/javascript" src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
-  <style>
-    .smallVideo {
-      height: 35%;
-      width: 40%;
-    }
-    .view-container {
-      margin: 0 20px;
-    }
-    #recordButton {
-      margin-bottom: 20px;
-    }
-  </style>
 </head>
 <body>
   <header></header>
@@ -46,15 +34,20 @@
         This example shows how to use <a href="https://get.cct.ericsson.net/latest/docs/reference/Recorder.html" target="_blank">Recorder</a> to record a video.
       </div>
     </section>
-    <div class="view-container">
-      <div class="buttonContainer">
-        <button id="recordButton">Start Recording</button>
-      </div>
-      <video class="smallVideo" id="cameraVideo" autoplay muted></video>
+    <p class="margins">
+      <button id="recordButton">Start Recording</button>
+    </p>
+    <section>
+      <p class="video-container margins medium">
+        <video id="cameraVideo" muted autoplay></video>
+        <label>Self view</label>
+      </p>
       <a id="downloadLink">
-        <video class="smallVideo" id="recordedCameraVideo" controls autoplay></video>
+        <p class="video-container margins medium">
+          <video id="recordedCameraVideo" controls autoplay></video>
+        </p>
       </a>
-    </div>
+    </section>
     <footer></footer>
   </main>
   <script>
