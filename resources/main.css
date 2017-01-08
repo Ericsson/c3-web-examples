@@ -47,7 +47,7 @@ input {
 section {
     display: flex;
     flex-flow: row wrap;
-    flex: 1 0 auto;
+    flex: 0 0 auto;
     margin-bottom: 20px;
 }
 ul {
