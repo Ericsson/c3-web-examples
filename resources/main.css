@@ -38,25 +38,10 @@ body {
     margin: 0;
     padding: 0;
 }
-h1, h2, h3, h4 {
+h1, h2, h3 {
     color: #444;
     font-weight: normal;
-}
-h1, h2 {
-    line-height:1.2em;
-    margin-top:32px;
-    margin-bottom:12px;
-}
-h1:first-child {
-    margin-top:0;
-}
-h3, h4, h5, h6 {
-    margin-top:12px;
-    margin-bottom:0;
-}
-h5, h6 {
-    font-size:0.9em;
-    line-height:1.0em;
+    margin: 5px 0 10px 0;
 }
 label {
     display: inline-block;
@@ -71,12 +56,6 @@ ul {
     display: flex;
     flex-flow: column nowrap;
     align-items: flex-start;
-}
-h1, h2 {
-    margin: 10px 0 15px 0;
-}
-h3, h4, h5, h6 {
-    margin: 5px 0 10px 0;
 }
 a {
     color: #308bd8;
