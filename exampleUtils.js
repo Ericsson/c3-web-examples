@@ -145,9 +145,29 @@ var EXAMPLE_UTILS_ICE_SERVERS = [
   },
 ]
 
-document.addEventListener('DOMContentLoaded', function () {
-  var div = document.getElementById('homeServerBanner')
-  var textnode = document.createTextNode('Using Home Server: ' + getCctAddress() + ' - ')
+function createHeaderTitle() {
+  var title = document.createElement('a')
+  title.classList.add('header-title')
+  title.href = '../index.html'
+
+  var logo = document.createElement('img')
+  logo.classList.add('header-title-logo')
+  logo.src = '../resources/ECON_116px.png'
+
+  var text = document.createElement('span')
+  text.classList.add('header-title-text')
+  text.textContent = 'Ericsson C3 Web examples'
+
+  title.appendChild(logo)
+  title.appendChild(text)
+  return title
+}
+
+function createServerInput() {
+  var div = document.createElement('div')
+  div.classList.add('header-server-input')
+
+  var textnode = document.createTextNode('Server: ' + getCctAddress() + ' - ')
   var reset = document.createElement('a')
   reset.text = 'reset'
   reset.href = '#'
@@ -159,4 +179,11 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   div.appendChild(textnode)
   div.appendChild(reset)
+  return div
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  var header = document.querySelector('header')
+  header.appendChild(createHeaderTitle())
+  header.appendChild(createServerInput())
 })
