@@ -187,16 +187,14 @@ PeerConnecter.clientInCall(client).then(function (connecter) {
     fileRef.fetch().then(function (file) {
       showReceivedFileRef(fileRef)
     }).catch(function (error) {
-      cct.log.error('error', 'Failed to download file:', error)
-      logError('Failed to download file: ', error)
+      cct.log.error('example', 'Failed to download file: ', error)
     })
     fileRef.on('progress', function (progress) {
       el.progressBar.value = progress
     })
   })
 }).catch(function (error) {
-  cct.log.error('example', '' + error)
-  logError('Error: ' + error)
+  cct.log.error('example', 'Error: ' + error)
 })
 
 function showReceivedFileRef(fileRef) {
