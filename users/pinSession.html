@@ -24,26 +24,29 @@
   <script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
   <script type="text/javascript" src="../exampleUtils.js"></script>
   <style type="text/css">
-    #main {
-      margin: 20px;
-    }
     #error-message {
       color: #f00;
-      font-size: 2rem;
-    }
-    input {
-      height: 24px;
-      width: 220px;
-      max-width: 80%;
-    }
-    button {
-      margin-left: 156px;
-      margin-top: 10px;
+      font-size: 1.2em;
     }
     label {
-      width: 150px;
-      margin-top: 3px;
-      float: left;
+      color: #555;
+      margin-bottom: 3px;
+    }
+    .pin-form {
+      flex: 0 1 260px;
+      max-width: 260px;
+      display: flex;
+      flex-flow: column nowrap;
+      align-items: stretch;
+    }
+    .pin-form-row {
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: space-between;
+      margin: 5px 0;
+    }
+    #join-meeting {
+      flex: 1;
     }
   </style>
 </head>
@@ -56,26 +59,27 @@
         A simple session setup example using pin codes and guest access via <a href="https://get.cct.ericsson.net/latest/docs/reference/Auth.html#-static-guest__anchor"><code>cct.Auth.guest</code></a>.
       </div>
     </section>
-    <div id="main">
+    <section class="margins">
       <div id="error-message" hidden></div>
       <div id="join-meeting">
-        <form id="join-room-form">
-          <ul>
-            <li>
-              <label>Enter PIN</label><input name="pin" type="number" required>
-            </li>
-            <li>
-              <button type="submit">Join room</button>
-            </li>
-          </ul>
+        <form id="join-room-form" class="pin-form">
+          <div class="pin-form-row">
+            <label>Enter PIN</label>
+            <input name="pin" type="number" required>
+          </div>
+          <div class="pin-form-row">
+            <label></label>
+            <button type="submit">Join room</button>
+          </div>
         </form>
-        <span>OR</span>
-        <form id="create-room-form">
-          <ul>
-            <li>
-              <button type="submit">Create room with random PIN</button>
-            </li>
-          </ul>
+        <form id="create-room-form" class="pin-form">
+          <div class="pin-form-row">
+            <label>OR</label>
+          </div>
+          <div class="pin-form-row">
+            <label></label>
+            <button type="submit">Create room with random PIN</button>
+          </div>
         </form>
       </div>
       <div id="inside-meeting" hidden>
@@ -83,7 +87,7 @@
         Other users in the room:
         <ul id="member-list"></ul>
       </div>
-    </div>
+    </section>
     <footer></footer>
   </main>
   <script type="text/javascript">
