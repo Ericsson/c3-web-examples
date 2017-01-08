@@ -103,6 +103,7 @@ el.button.addEventListener('click', function () {
       el.button.disabled = false
     }, function (error) {
       cct.log.info('example', 'screen sharing failed, ' + error)
+      el.button.disabled = false
       el.error.textContent = error.toString()
       screenshareSource = null
     })
