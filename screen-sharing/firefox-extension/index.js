@@ -9,7 +9,8 @@ var configToEnableScreenCapturing = 'media.getusermedia.screensharing.enabled';
 // replace your own domains with below array
 var arrayOfMyOwnDomains = ['spaces.ericsson.net', '*.c3.ericsson.net',
         'epc-widget.cct.ericsson.net', 'sandbox01.cct.ericsson.net',
-        'cct.ericsson.net', 'get.cct.ericsson.net', 'localhost', '127.0.0.1'];
+        'cct.ericsson.net', 'get.cct.ericsson.net', 'localhost', '127.0.0.1',
+        'ericsson.github.io'];
 
 // e.g. if 127.0.0.1 or localhost is already allowed by anyone else
 var listOfSimilarAlreadyAllowedDomains = [];
