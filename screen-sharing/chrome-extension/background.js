@@ -1,34 +1,35 @@
-﻿var data_sources = ['screen', 'window'],
-    desktopMediaRequestId = '';
+'use strict'
+
+var DEFAULT_SOURCE_TYPES = ['screen', 'window']
 
 chrome.runtime.onConnect.addListener(function (port) {
-    port.onMessage.addListener(function (msg) {
-        if (msg.message === 'requestChromeMediaSourceId') {
-            requestScreenSharing(port, msg);
+    port.onMessage.addListener(function (message) {
+        if (message.message === 'requestChromeMediaSourceId') {
+            requestScreenSharing(port, message);
         }
-        if (msg.message === 'getInstalledStatus') {
-            isInstalled(port, msg);
+        if (message.message === 'getInstalledStatus') {
+            isInstalled(port, message);
         }
-        if (msg.message === 'extensionId') {
-            extentionIsInstalled(port, msg);
+        if (message.message === 'extensionId') {
+            extentionIsInstalled(port, message);
         }
     });
 });
 
-function isInstalled(port, msg) {
-    msg.extensionId = chrome.runtime.id;
-    msg.message = 'extensionIsInstalled';
-    port.postMessage(msg);
+function isInstalled(port, message) {
+    port.postMessage({
+        extensionId: chrome.runtime.id,
+        message: 'extensionIsInstalled',
+    });
 }
 
-function requestScreenSharing(port, msg) {
-    desktopMediaRequestId = chrome.desktopCapture.chooseDesktopMedia(
-        data_sources, port.sender.tab, function (streamId) {
-        if (streamId) {
-            msg.extensionId = chrome.runtime.id;
-            msg.message = 'chromeMediaSourceId';
-            msg.content = streamId
-        }
-        port.postMessage(msg);
+function requestScreenSharing(port, message) {
+    var sourceTypes = message.sourceTypes || DEFAULT_SOURCE_TYPES
+    chrome.desktopCapture.chooseDesktopMedia(sourceTypes, port.sender.tab, function (sourceId) {
+        port.postMessage({
+            extensionId: chrome.runtime.id,
+            message: 'chromeMediaSourceId',
+            content: sourceId || null,
+        });
     });
 }
