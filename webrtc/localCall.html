@@ -38,6 +38,9 @@
         This example shows how to connect two <a href="https://get.cct.ericsson.net/latest/docs/reference/Client.html">clients</a> together through a <a href="https://get.cct.ericsson.net/latest/docs/reference/Room.html">room</a>. Once they both have joined the room, a peer-2-peer WebRTC <a href="https://get.cct.ericsson.net/latest/docs/reference/Room.html#startCall__anchor">call</a> is set up.
       </div>
     </section>
+    <br>
+      <p id="msg"></p>
+    <br>
     <section>
       <div class="video-container margins small">
         <video id="self1" muted autoplay></video>
@@ -73,6 +76,7 @@ var el = {
   self2: document.getElementById('self2'),
   remote1: document.getElementById('remote1'),
   remote2: document.getElementById('remote2'),
+  msg:     document.getElementById('msg')
 }
 
 var client1 = new cct.Client({
@@ -89,7 +93,8 @@ Promise.all([
 .then(joinCallRoom)
 .then(setupCall)
 .catch(function (error) {
-  cct.log.error('error', error)
+  cct.log.error('error', error.message)
+  el.msg.innerHTML = error.message
 })
 
 function joinCallRoom() {
