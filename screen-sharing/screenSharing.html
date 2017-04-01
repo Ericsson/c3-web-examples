@@ -32,6 +32,40 @@
       margin: 20px 20px 0 0;
       font-size: 0.8em;
     }
+    button {
+      margin: 0 10px;
+    }
+    .modal {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+
+      display: flex;
+      flex-flow: column nowrap;
+      align-items: center;
+      justify-content: space-around;
+
+      background: rgba(0, 0, 0, 0.5);
+    }
+    .dialog {
+      flex: 0 1 auto;
+      padding: 15px 20px;
+
+      display: flex;
+      flex-flow: column nowrap;
+      align-items: center;
+
+      background: #F0F8FC;
+      border: 1px solid #466493;
+      border-radius: 5px;
+    }
+    #source-selection {
+      margin: 0;
+      margin-bottom: 20px;
+      max-width: 320px;
+    }
   </style>
 </head>
 <body>
@@ -54,17 +88,25 @@
           Firefox extension
         </a>
       </div>
-      <select id="source-type-selection">
-        <option value="">Default</option>
-        <option value="screen">Screen</option>
-        <option value="window">Window</option>
-      </select>
-      <button id="sharing-button">Start screen sharing</button>
+      <select id="source-type-selection"></select>
+      <button id="sharing-button" disabled>Start screen sharing</button>
       <div id="error-display"></div>
+      <br>
       <video autoplay muted></video>
     </div>
     <footer></footer>
   </main>
+
+  <div id='html-selection-popup' class='modal' style='display: none;'">
+    <div class='dialog'>
+      <h1>Select source</h1>
+      <select id="source-selection"></select>
+      <div class='vertical-button-row'>
+        <button id="accept-source-button">Share</button>
+        <button id="reject-source-button" class='negative'>Cancel</button>
+      </div>
+    </div>
+  </div>
   <script type="application/javascript">
 'use strict'
 
@@ -76,41 +118,143 @@ var el = {
   button: document.getElementById('sharing-button'),
   error: document.getElementById('error-display'),
   video: document.querySelector('video'),
+  htmlSelectionPopup: document.getElementById('html-selection-popup'),
+  sourceSelection: document.getElementById('source-selection'),
+  acceptSourceButton: document.getElementById('accept-source-button'),
+  rejectSourceButton: document.getElementById('reject-source-button'),
 }
 
-var screenshareSource
+var START_SHARING_TEXT = 'Start screen sharing'
+var STOP_SHARING_TEXT = 'Stop screen sharing'
 
-el.button.addEventListener('click', function () {
-  if (screenshareSource) {
-    screenshareSource.stop()
-    screenshareSource = null
-    el.button.textContent = 'Start screen sharing'
-  } else {
+var screenSource
+
+cct.webRtcReady().then(function () {
+  setupTypeSelectionOptions()
+  el.button.disabled = false
+
+  el.button.addEventListener('click', function () {
+    if (screenSource) {
+      screenSource.stop()
+      screenSource = null
+      el.button.textContent = START_SHARING_TEXT
+      el.button.disabled = false
+      return
+    }
+
     el.button.disabled = true
 
-    var sourceType = el.sourceTypeSelection.value || null
+    var type = el.sourceTypeSelection.value || null
+    if (type === 'html') {
+      return showHtmlPicker()
+    }
 
-    screenshareSource = new cct.ScreenSource({
+    screenSource = startScreenSharing({
       chromeExtensionId: 'epajpkbdigdpepgncdpmilaoamkjgoah',
-      type: sourceType,
-      audio: false,
+      type: type,
       video: {
         frameRate: 5,
       },
     })
-    screenshareSource.connect(el.video)
-    screenshareSource.promise.then(function () {
-      cct.log.info('example', 'screen sharing started successfully')
-      el.button.textContent = 'Stop screen sharing'
-      el.button.disabled = false
-    }, function (error) {
-      cct.log.info('example', 'screen sharing failed, ' + error)
-      el.button.disabled = false
-      el.error.textContent = error.toString()
-      screenshareSource = null
-    })
-  }
+  })
 })
+
+function startScreenSharing(constraints) {
+  var screenSource = new cct.ScreenSource(constraints)
+  screenSource.connect(el.video)
+
+  screenSource.promise.then(function () {
+    cct.log.info('example', 'screen sharing started successfully')
+    el.button.textContent = STOP_SHARING_TEXT
+    el.button.disabled = false
+    el.error.textContent = ''
+  }, function (error) {
+    cct.log.info('example', 'screen sharing failed, ' + error)
+    el.button.textContent = START_SHARING_TEXT
+    el.button.disabled = false
+    el.error.textContent = error.toString()
+    screenSource = null
+  })
+
+  return screenSource
+}
+
+// This populates the dropdown menu where you can select the different screen sharing types
+function setupTypeSelectionOptions() {
+  var options = {}
+
+  if (cct.ScreenSource.implementation === 'chrome') {
+    options = {
+      '': 'Any', // Both screen and window are allowed, actual type constraint ends up being null
+      screen: 'Screen',
+      window: 'Window',
+    }
+  } else if (cct.ScreenSource.implementation === 'firefox') {
+    options = {
+      screen: 'Screen',
+      window: 'Window',
+      application: 'Application',
+    }
+  } else if (cct.ScreenSource.implementation === 'temasys') {
+    options = {
+      '': 'Native dialog', // Will pass null as type constraint
+      html: 'HTML dialog',
+    }
+  } else {
+    el.error.textContent = 'Screen sharing is not available in this browser'
+  }
+
+  // Add browser-specific options to dropdown menu
+  Object.keys(options).forEach(function (key) {
+    var option = el.sourceTypeSelection.appendChild(document.createElement('option'))
+    option.textContent = options[key]
+    option.value = key
+  })
+}
+
+// Show a source picker with JS, only used for temasys (Safari, Internet Explorer)
+function showHtmlPicker() {
+  el.button.disabled = true
+
+  cct.ScreenSource.enumerateSources().then(sourceInfos => {
+    el.htmlSelectionPopup.style.display = null
+
+    // Clear out old entries and populate dropdown with the new source type list
+    el.sourceSelection.innerHTML = ''
+    sourceInfos.forEach(function (sourceInfo, index) {
+      var option = el.sourceSelection.appendChild(document.createElement('option'))
+      option.textContent = sourceInfo.type + ': ' + sourceInfo.label
+      // the value is the index in the sourceInfos list, so it's simple to lookup the selected source
+      option.value = index
+    })
+
+    el.acceptSourceButton.onclick = function () {
+      var sourceInfo = sourceInfos[el.sourceSelection.value]
+
+      screenSource = startScreenSharing({
+        video: {
+          frameRate: 5,
+          source: sourceInfo,
+        },
+      })
+
+      el.htmlSelectionPopup.style.display = 'none'
+    }
+
+    el.rejectSourceButton.onclick = function () {
+      el.htmlSelectionPopup.style.display = 'none'
+      el.button.textContent = START_SHARING_TEXT
+      el.button.disabled = false
+    }
+  }).catch(function (error) {
+    cct.log.info('example', 'source enumeration failed, ' + error)
+    el.htmlSelectionPopup.style.display = 'none'
+    el.button.textContent = START_SHARING_TEXT
+    el.button.disabled = false
+    el.error.textContent = 'Source enumeration failed, ' + error
+  })
+}
+
   </script>
 </body>
 </html>
