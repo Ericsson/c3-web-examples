@@ -28,6 +28,10 @@
     video {
       width: 100%;
     }
+    select {
+      margin: 20px 20px 0 0;
+      font-size: 0.8em;
+    }
   </style>
 </head>
 <body>
@@ -50,7 +54,11 @@
           Firefox extension
         </a>
       </div>
-      <br>
+      <select id="source-type-selection">
+        <option value="">Default</option>
+        <option value="screen">Screen</option>
+        <option value="window">Window</option>
+      </select>
       <button id="sharing-button">Start screen sharing</button>
       <div id="error-display"></div>
       <video autoplay muted></video>
@@ -64,6 +72,7 @@ cct.log.setLogLevel(cct.log.ALL)
 cct.log.color = true
 
 var el = {
+  sourceTypeSelection: document.getElementById('source-type-selection'),
   button: document.getElementById('sharing-button'),
   error: document.getElementById('error-display'),
   video: document.querySelector('video'),
@@ -79,8 +88,11 @@ el.button.addEventListener('click', function () {
   } else {
     el.button.disabled = true
 
+    var sourceType = el.sourceTypeSelection.value || null
+
     screenshareSource = new cct.ScreenSource({
       chromeExtensionId: 'epajpkbdigdpepgncdpmilaoamkjgoah',
+      type: sourceType,
       audio: false,
       video: {
         frameRate: 5,
