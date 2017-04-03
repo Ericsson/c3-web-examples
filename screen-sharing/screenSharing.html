@@ -216,7 +216,7 @@ function setupTypeSelectionOptions() {
 function showHtmlPicker() {
   el.button.disabled = true
 
-  cct.ScreenSource.enumerateSources().then(sourceInfos => {
+  cct.ScreenSource.enumerateSources().then(function (sourceInfos) {
     el.htmlSelectionPopup.style.display = null
 
     // Clear out old entries and populate dropdown with the new source type list
