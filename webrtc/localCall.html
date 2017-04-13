@@ -89,7 +89,7 @@ Promise.all([
 .then(joinCallRoom)
 .then(setupCall)
 .catch(function (error) {
-  cct.log.error('error', error)
+  cct.log.error('error', '' + error)
 })
 
 function joinCallRoom() {
