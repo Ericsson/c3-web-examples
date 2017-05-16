@@ -145,7 +145,7 @@ PeerConnecter.prototype.enterCall = function () {
 
 PeerConnecter.clientInRoom = function (client) {
   window.onhashchange = function (event) {
-    var oldHash = event.oldURL.split('#')[1]
+    var oldHash = event.oldURL && event.oldURL.split('#')[1]
     if (oldHash) {
       location.reload()
     }
