@@ -34,27 +34,35 @@
 </head>
 <body>
   <header></header>
-  <main class="centered">
-    <br>
-    <div class="video-container large margins">
-      <video class="remote" id="remote" muted autoplay></video>
-      <label>Active speaker</label>
-    </div>
-    <p>
-      Click one of the videos below to make that user the "active speaker".
-    </p>
+  <main>
     <section>
-      <div class="video-container small margins">
-        <video id="self1" muted autoplay></video>
-        <label>Self view 1</label>
+      <div class="about">
+        <h3>Conference Call example</h3>
+        This example show how to set up manual video switching in a <a href="https://get.cct.ericsson.net/latest/docs/reference/Conference.html">Conference</a> using <a href="https://get.cct.ericsson.net/latest/docs/reference/ConferenceSwitcher.html">ConferenceSwitcher</a>.
       </div>
-      <div class="video-container small margins">
-        <video id="self2" muted autoplay></video>
-        <label>Self view 2</label>
+    </section>
+    <section class="column centered">
+      <div class="video-container large margins">
+        <video class="remote" id="remote" muted autoplay></video>
+        <label>Active speaker</label>
       </div>
-      <div class="video-container small margins">
-        <video id="self3" muted autoplay></video>
-        <label>Self view 3</label>
+      <p>
+        Click one of the videos below to make that user the "active speaker".
+      </p>
+      <br>
+      <div class="row centered">
+        <div class="video-container small margins">
+          <video id="self1" muted autoplay></video>
+          <label>Self view 1</label>
+        </div>
+        <div class="video-container small margins">
+          <video id="self2" muted autoplay></video>
+          <label>Self view 2</label>
+        </div>
+        <div class="video-container small margins">
+          <video id="self3" muted autoplay></video>
+          <label>Self view 3</label>
+        </div>
       </div>
     </section>
     <footer></footer>
