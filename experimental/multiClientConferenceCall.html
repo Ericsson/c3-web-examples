@@ -39,7 +39,7 @@
     <section>
       <div class="about">
         <h3>Multi Client Conference Call example</h3>
-        This advanced example shows how a complete conferencing application can be built using <a href="https://get.cct.ericsson.net/latest/docs/reference/ConferenceCall.html">ConferenceCall</a>, <a href="https://get.cct.ericsson.net/latest/docs/reference/MediaBroadcaster.html">MediaBroadcaster</a>, <a href="https://get.cct.ericsson.net/latest/docs/reference/MediaSwitcher.html">MediaSwitcher</a> and <a href="https://get.cct.ericsson.net/latest/docs/reference/AudioMeter.html">AudioMeter</a>.
+        This advanced example shows how a complete conferencing application can be built using <a href="https://get.cct.ericsson.net/latest/docs/reference/Conference.html">Conference</a>, <a href="https://get.cct.ericsson.net/latest/docs/reference/ConferenceSwitcher.html">ConferenceSwitcher</a>, <a href="https://get.cct.ericsson.net/latest/docs/reference/ThumbnailBroadcaster.html">ThumbnailBroadcaster</a> and <a href="https://get.cct.ericsson.net/latest/docs/reference/MediaBroadcaster.html">MediaBroadcaster</a>.
       </div>
       <div class="peer-link">
         <h3 class="peer-link-title"></h3>
@@ -47,10 +47,6 @@
       </div>
     </section>
     <div class="margins centered column">
-      <div class="video-container small">
-        <video id="selfVideo" muted autoplay></video>
-        <label>Self view</label>
-      </div>
       <div class="video-container large">
         <video id="bigVideo" muted autoplay></video>
         <label>Active speaker</label>
@@ -67,22 +63,22 @@
 'use strict'
 
 cct.log.setLogLevel('example', cct.log.ALL)
-cct.log.setLogLevel('media-switcher', cct.log.ALL)
-cct.log.setLogLevel('media-broadcaster', cct.log.ALL)
-cct.log.setLogLevel('conference-call', cct.log.ALL)
+cct.log.setLogLevel('conference', cct.log.DEBUG)
+cct.log.setLogLevel('media-broadcaster', cct.log.DEBUG)
+cct.log.setLogLevel('conference-switcher', cct.log.DEBUG)
+cct.log.setLogLevel('thumbnail-broadcaster', cct.log.DEBUG)
+cct.log.color = true
 
 var bigVideo = document.getElementById('bigVideo')
-var selfVideo = document.getElementById('selfVideo')
 var remoteVideoContainer = document.getElementById('remoteVideoContainer')
-var microphone
-var hdCamera
-var sdCamera
-// var audioMeters = {}
+var videoSource
+var audioSource
 var client
 var room
-var videoBroadcaster
+var conference
 var audioBroadcaster
-var switcher
+var thumbnailBroadcaster
+var thumbnailRenderer
 
 cct.webRtcReady()
   .then(setupMediaSources)
@@ -97,30 +93,13 @@ cct.webRtcReady()
 
 function setupMediaSources() {
   cct.log.info('example', 'setting up media sources')
-  hdCamera = new cct.DeviceSource({
+  // We could use StreamSplitter instead of two sources, but only if we're not aiming to support WebRTC plugins
+  videoSource = new cct.DeviceSource({
     video: {
       aspectRatio: 16 / 9,
     },
   })
-  sdCamera = new cct.DeviceSource({
-    video: {
-      width: {
-        max: 120,
-      },
-      height: {
-        max: 90,
-      },
-      aspectRatio: 16 / 9,
-    },
-  })
-  sdCamera.connect(selfVideo)
-  selfVideo.onclick = function () {
-    cct.log.info('example', 'Setting self active')
-    switcher.setActive()
-  }
-  microphone = new cct.DeviceSource({
-    audio: true,
-  })
+  audioSource = new cct.DeviceSource({audio: true})
 }
 
 function setupConference() {
@@ -131,60 +110,68 @@ function setupConference() {
   return PeerConnecter.clientInRoom(client).then(function (connecter) {
     cct.log.info('example', 'setting up conference')
     room = connecter.room
-    return Promise.resolve(room.startConference())
+    // switcherMode: 'automatic' is switching based on voice activity
+    conference = room.startConference({switcherMode: 'automatic'})
   })
 }
 
-function setupSwitcher(conference) {
+function setupSwitcher() {
   cct.log.info('example', 'setting up switcher')
-  switcher = new cct.MediaSwitcher()
-  hdCamera.connect(switcher)
-  switcher.connect(bigVideo)
-  conference.attach('videoSwitch', switcher)
-  // addAudioMeter(conference._userId, microphone)
-  // startVoiceSwitching(switcher, conference._userId)
-  switcher.on('activeSpeaker', function (newActive) {
+
+  videoSource.connect(conference.switcher)
+  conference.switcher.connect(bigVideo)
+  conference.switcher.on('speaker', function (newActive) {
     cct.log.info('example', 'Switched to ' + newActive)
   })
-  return conference
 }
-
-function setupAudioBroadcaster(conference) {
+var ads = []
+function setupAudioBroadcaster() {
   cct.log.info('example', 'setting up audio broadcast')
   audioBroadcaster = new cct.MediaBroadcaster()
-  microphone.connect(audioBroadcaster)
-  conference.attach('audioBroadcast', audioBroadcaster)
 
-  audioBroadcaster.on('remoteSource', function (event) {
-    var peer = event.peer
-    var source = event.source
-    if (event.source) {
-      addRemoteAudioElement(peer, source)
-    } else {
-      removeRemoteAudioElement(peer)
-    }
+  // Minimal audio setup, we could keep a reference to the audio element for muting
+  // This lets us skip cleanup since the sources will be disconnected automatically.
+  audioBroadcaster.on('added', function (added) {
+    added.forEach(function (source) {
+      source.connect(new Audio())
+    })
   })
 
-  return conference
+  audioSource.connect(audioBroadcaster)
+  conference.attach('audioBroadcaster', audioBroadcaster)
 }
 
-function setupVideoBroadcaster(conference) {
+function setupVideoBroadcaster() {
   cct.log.info('example', 'setting up video broadcast')
-  videoBroadcaster = new cct.MediaBroadcaster()
-  sdCamera.connect(videoBroadcaster)
-  conference.attach('videoBroadcast', videoBroadcaster)
-
-  videoBroadcaster.on('remoteSource', function (event) {
-    var peer = event.peer
-    var source = event.source
-    if (event.source) {
-      addRemoteVideoElement(peer, source)
-    } else {
-      removeRemoteVideoElement(peer)
-    }
+  thumbnailBroadcaster = new cct.ThumbnailBroadcaster({
+    projectionConfiguration: {
+      width: 100,
+      aspectRatio: 16/9,
+      contentMode: 'aspectFill',
+    },
+    videoFrameRate: 10,
+    imageFrameRate: 1,
   })
 
-  return conference
+  thumbnailRenderer = thumbnailBroadcaster.createRenderer({
+    elementClass: 'remoteVideo',
+  })
+  // As users join and leave the conference their thumbnail elements will
+  // be added and removed. The elements here can be either video or image
+  // elements, depending on what the connection between the two users allows.
+  thumbnailRenderer.on('added', function (added) {
+    added.forEach(function (element) {
+      remoteVideoContainer.appendChild(element)
+    })
+  })
+  thumbnailRenderer.on('removed', function (removed) {
+    removed.forEach(function (element) {
+      remoteVideoContainer.removeChild(element)
+    })
+  })
+
+  videoSource.connect(thumbnailBroadcaster)
+  conference.attach('thumbnailBroadcaster', thumbnailBroadcaster)
 }
 
 function setupButtonListeners() {
@@ -193,85 +180,13 @@ function setupButtonListeners() {
   var videoButton = document.getElementById('videoButton')
 
   audioButton.onclick = function () {
-    microphone.mute.audio = !microphone.mute.audio
-    audioButton.innerText = microphone.mute.audio ? 'Microphone: Off' : 'Microphone: On'
+    audioSource.mute.audio = !audioSource.mute.audio
+    audioButton.innerText = audioSource.mute.audio ? 'Microphone: Off' : 'Microphone: On'
   }
   videoButton.onclick = function () {
-    hdCamera.mute.video = !hdCamera.mute.video
-    sdCamera.mute.video = !sdCamera.mute.video
-    videoButton.innerText = hdCamera.mute.video ? 'Camera: Off' : 'Camera: On'
+    videoSource.mute.video = !videoSource.mute.video
+    videoButton.innerText = videoSource.mute.video ? 'Camera: Off' : 'Camera: On'
   }
-}
-/*
-function startVoiceSwitching(switcher, selfId) {
-  setInterval(function () {
-    var king = switcher.liveMembers.concat().sort()[0]
-    if (king === selfId) {
-      var loudestPeer
-      var loudestLevel = 0
-      for (var peer in audioMeters) {
-        var peerLevel = audioMeters[peer].filtered
-        if (peerLevel > loudestLevel) {
-          loudestLevel = peerLevel
-          loudestPeer = peer
-        }
-      }
-      switcher.setActive(loudestPeer)
-    }
-  }, 5000)
-}
-*//*
-function addAudioMeter(peer, source) {
-  var meter = audioMeters[peer] || new cct.AudioMeter()
-  source.connect(meter)
-  audioMeters[peer] = meter
-}
-*//*
-function removeAudioMeter(peer) {
-  var meter = audioMeters[peer]
-  if (meter) {
-    meter.stop()
-    delete audioMeters[peer]
-  }
-}
-*/
-function addRemoteVideoElement(peer, source) {
-  var videoId = 'video:' + peer
-  var videoEl = document.getElementById(videoId)
-  if (!videoEl) {
-    videoEl = document.createElement('video')
-    videoEl.id = videoId
-    videoEl.autoplay = true
-    videoEl.className = 'remoteVideo'
-    videoEl.onclick = function () {
-      cct.log.info('example', 'Setting active: ' + peer)
-      switcher.setActive(peer)
-    }
-    remoteVideoContainer.appendChild(videoEl)
-  }
-  source.connect(videoEl)
-}
-
-function removeRemoteVideoElement(peer) {
-  var videoEl = document.getElementById('video:' + peer)
-  remoteVideoContainer.removeChild(videoEl)
-}
-
-function addRemoteAudioElement(peer, source) {
-  var audioId = 'audio:' + peer
-  var audioEl = document.getElementById(audioId)
-  if (!audioEl) {
-    audioEl = document.createElement('audio')
-    audioEl.id = audioId
-    audioEl.autoplay = true
-    document.body.appendChild(audioEl)
-  }
-  source.connect(audioEl)
-}
-
-function removeRemoteAudioElement(peer) {
-  var audioEl = document.getElementById('audio:' + peer)
-  document.body.removeChild(audioEl)
 }
   </script>
 </body>
