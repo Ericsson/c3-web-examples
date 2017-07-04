@@ -136,9 +136,6 @@ cct.webRtcReady().then(function () {
   el.button.addEventListener('click', function () {
     if (screenSource) {
       screenSource.stop()
-      screenSource = null
-      el.button.textContent = START_SHARING_TEXT
-      el.button.disabled = false
       return
     }
 
@@ -149,7 +146,7 @@ cct.webRtcReady().then(function () {
       return showHtmlPicker()
     }
 
-    screenSource = startScreenSharing({
+    startScreenSharing({
       chromeExtensionId: 'epajpkbdigdpepgncdpmilaoamkjgoah',
       type: type,
       video: {
@@ -160,7 +157,7 @@ cct.webRtcReady().then(function () {
 })
 
 function startScreenSharing(constraints) {
-  var screenSource = new cct.ScreenSource(constraints)
+  screenSource = new cct.ScreenSource(constraints)
   screenSource.connect(el.video)
 
   screenSource.promise.then(function () {
@@ -168,6 +165,17 @@ function startScreenSharing(constraints) {
     el.button.textContent = STOP_SHARING_TEXT
     el.button.disabled = false
     el.error.textContent = ''
+
+    screenSource.connect(new cct.StreamSink({
+      onStream: function (stream) {
+        // Stream was removed
+        if (!stream) {
+          screenSource = null
+          el.button.textContent = START_SHARING_TEXT
+          el.button.disabled = false
+        }
+      },
+    }))
   }, function (error) {
     cct.log.info('example', 'screen sharing failed, ' + error)
     el.button.textContent = START_SHARING_TEXT
