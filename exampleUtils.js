@@ -170,16 +170,15 @@ function getCctAddress() {
   return homeServerURL
 }
 
-var EXAMPLE_UTILS_ICE_SERVERS = [
-  {
-    urls: 'stun:mmt-stun.verkstad.net',
-  },
-  {
-    urls: 'turn:static.verkstad.net:443?transport=tcp',
-    username: 'openwebrtc',
-    credential: 'secret',
-  },
-]
+var EXAMPLE_UTILS_ICE_SERVERS = [{
+  url: 'turn:turn.demo.c3.ericsson.net:443?transport=tcp',
+  username: 'c3-turn',
+  credential: 'see-three',
+}, {
+  url: 'turn:turn.demo.c3.ericsson.net:443?transport=udp',
+  username: 'c3-turn',
+  credential: 'see-three',
+}]
 
 function createHeaderTitle() {
   var title = document.createElement('a')
