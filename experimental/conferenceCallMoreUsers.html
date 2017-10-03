@@ -1,0 +1,206 @@
+<!--
+ * Copyright (C) 2016 Ericsson AB. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ -->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Conference Call</title>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="../resources/main.css">
+  <link rel="icon" href="../resources/favicon.ico">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/3.2.1/es6-promise.min.js"></script>
+  <script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
+  <script type="text/javascript" src="https://get.cct.ericsson.net/latest/devtools.js"></script>
+  <script type="text/javascript" src="../exampleUtils.js"></script>
+  <style type="text/css">
+    .speaker {
+      border: 2px solid #48f;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <header></header>
+  <main>
+    <section>
+      <div class="about">
+        <h3>Conference Call example</h3>
+        This example show how to set up manual video switching in a <a href="https://get.cct.ericsson.net/latest/docs/reference/Conference.html">Conference</a> using <a href="https://get.cct.ericsson.net/latest/docs/reference/ConferenceSwitcher.html">ConferenceSwitcher</a>.
+      </div>
+    </section>
+    <section class="column centered">
+      <div class="video-container large margins">
+        <video class="remote" id="remote" muted autoplay></video>
+        <label>Active speaker</label>
+      </div>
+      <p>
+        Click one of the videos below to make that user the "active speaker".
+      </p>
+      <br>
+      <div class="row centered">
+      </div>
+    </section>
+    <footer></footer>
+  </main>
+  <script type="text/javascript">
+'use strict'
+const NUM_CLIENTS = 4
+
+var el = {
+  remote: document.getElementById('remote'),
+}
+
+for(let i = 0; i < NUM_CLIENTS; i++) {
+  var name = `self${i+1}`
+  var div = document.createElement('div')
+  div.className = "video-container small margins"
+  var video = document.createElement('video')
+  video.id = name
+  video.muted = true
+  video.autoplay = true
+  div.appendChild(video)
+  var parent = document.getElementsByClassName('row centered')[0]
+  parent.appendChild(div)
+  el[name] =  document.getElementById(name)
+}
+
+
+cct.log.setLogLevel('conference-switcher', cct.log.ALL)
+cct.log.setLogLevel('conference-algo', cct.log.ALL)
+cct.log.setLogLevel('events', cct.log.NONE)
+cct.log.setLogLevel('own-events', cct.log.NONE)
+
+cct.log.setLogLevel('example', cct.log.ALL)
+cct.log.color = true
+var iceServers = [{
+  urls: 'turn:147.214.169.39:444?transport=tcp',
+  username: '2147483647:forever',
+  credential: 'kN8b7k8l2hXJq8T9B/W+ZXjG8Nc=',
+}]
+
+var options = {
+  iceServers,
+  iceCandidateFilter: info => {
+    return info.type === 'relay'
+  }
+}
+
+var clients = []
+for(let i = 0; i < NUM_CLIENTS; i++) {
+  clients[i] = new cct.Client(options)
+}
+
+var clientViews = {}
+
+function storeViewRef(n) {
+  return function (client) {
+    clientViews[client.user.id] = el['self' + n]
+  }
+}
+
+var authConfig = {serverUrl: getCctAddress()}
+
+var prepare = clients.map((client, idx) => 
+  cct.Auth.anonymous(authConfig).then(client.auth).then(storeViewRef(idx + 1)))
+
+Promise.all(prepare).then(createRoom).then(joinRoom)
+  .then(setupConference)
+  .catch(function (error) {
+    cct.log.error('example', 'Failed to setup conference, ' + error)
+  })
+
+function createRoom() {
+  let roomId = window.location.hash.slice(1)
+  if(roomId) {
+    return {roomId, creator: false}
+  } else {
+    return clients[0].createRoom({joinRule: 'open'}).then(room => {
+      history.replaceState('', '', '#' + room.id)
+      return {roomId: room.id, creator: true}
+    })
+  }
+}
+    
+
+function joinRoom(roomInfo) {
+  cct.log.info('example', 'Joining the same room')
+  console.log(roomInfo)
+
+  let joinRoomFunc = clients.map((client, idx) => {
+    if(roomInfo.creator === true && idx === 0) {
+      return client.fetchRoomById(roomInfo.roomId)
+    } else {
+      return client.fetchRoomById(roomInfo.roomId).then(room => room.join())
+    }
+  })
+  return Promise.all(joinRoomFunc)
+}
+
+var videoSource = []
+var conference = []
+
+function setupConference(rooms) {
+  window.rooms = rooms
+
+  cct.log.info('example', 'All three clients in same room, initiating conference')
+  // Create video test sources that can be identified visually
+  // This requires the devtools addon library to be loaded
+  for(let i = 0; i < NUM_CLIENTS; i++) {
+    let name = `user${i+1}`
+    videoSource[i] = new cct.devtools.VideoIdSource({id: name})
+    let sinkName = `self${i+1}`
+    videoSource[i].connect(el[sinkName])
+  }
+  
+  // Start the conferences
+  for(let i = 0; i < NUM_CLIENTS; i++) {
+    conference[i] = rooms[i].startConference({switcherMode: 'manual'})
+  }
+
+  cct.log.info('example', 'Setting up video switching')
+  // Set the input of each video switcher
+  conference[0].switcher.connect(el.remote)
+  for(let i = 0; i < NUM_CLIENTS; i++) {
+    videoSource[i].connect(conference[i].switcher)
+  }
+
+  // Update UI to reflect the active speaker is.
+  conference[0].switcher.on('speaker', function (speaker) {
+    cct.log.info('example', 'Speaker switched to ' + speaker)
+    for(let i = 0; i < NUM_CLIENTS; i++) {
+      let name = `self${i+1}`
+      el[name].parentNode.classList.remove('speaker')
+    }
+    clientViews[speaker].parentNode.classList.add('speaker')
+  })
+
+  // Click a self-view video to switch the active speaker.
+  // We always set the secondary speaker to be client1, otherwise we would
+  // see someone else when client1 is the primary speaker, since we're using
+  // client1's switcher output.
+  
+  for(let i = 0; i < NUM_CLIENTS; i++) {
+    let name = `self${i+1}`
+    el[name].onclick = function () {
+      conference[0].switcher.requestPrimarySpeaker(conference[i].ownId)
+      conference[0].switcher.requestSecondarySpeaker(conference[0].ownId)
+    }
+  }
+}
+
+</script>
+</body>
+</html>
