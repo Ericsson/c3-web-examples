@@ -148,7 +148,9 @@ var el = {
 var deviceSource = new cct.DeviceSource()
 deviceSource.connect(el.selfView)
 
-var client = new cct.Client()
+var client = new cct.Client({
+  iceServers: EXAMPLE_UTILS_ICE_SERVERS,
+})
 
 PeerConnecter.clientInCall(client).then(function (connecter) {
   var room = connecter.room
