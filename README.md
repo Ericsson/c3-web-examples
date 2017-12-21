@@ -1,7 +1,7 @@
-# C3 Web Examples
+# Contextual Communication Cloud Web Examples
 
-The easist way to get started developing on top of [Ericsson Contextual Communication Cloud (C3)](https://discuss.c3.ericsson.net) is to look
-at a few <code>C3 Web SDK</code> example applications. But if you have not yet
+The easist way to get started developing on top of [Ericsson Contextual Communication Cloud](https://discuss.c3.ericsson.net) is to look
+at a few example applications. But if you have not yet
 read the <a href="https://ericsson.github.io/c3-web-guide/">introduction</a> we strongly
 encourage you to do so first.
 

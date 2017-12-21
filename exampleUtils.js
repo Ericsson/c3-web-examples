@@ -191,7 +191,7 @@ function createHeaderTitle() {
 
   var text = document.createElement('span')
   text.classList.add('header-title-text')
-  text.textContent = 'Ericsson C3 Web examples'
+  text.textContent = 'Ericsson Contextual Communication Cloud examples'
 
   title.appendChild(logo)
   title.appendChild(text)
