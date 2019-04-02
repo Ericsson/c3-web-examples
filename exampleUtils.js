@@ -143,6 +143,13 @@ PeerConnecter.prototype.enterCall = function () {
   return this
 }
 
+PeerConnecter.authedClient = function (client) {
+  var connecter = new PeerConnecter(client)
+  return connecter.auth().then(function () {
+    return connecter
+  })
+}
+
 PeerConnecter.clientInRoom = function (client) {
   window.onhashchange = function (event) {
     var oldHash = event.oldURL && event.oldURL.split('#')[1]
@@ -150,8 +157,7 @@ PeerConnecter.clientInRoom = function (client) {
       location.reload()
     }
   }
-  var connecter = new PeerConnecter(client)
-  return connecter.auth().then(function () {
+  return PeerConnecter.authedClient(client).then(function (connecter) {
     return connecter.joinRoom()
   })
 }
