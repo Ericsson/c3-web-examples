@@ -127,18 +127,10 @@ function setupSwitcher() {
 var ads = []
 function setupAudioBroadcaster() {
   cct.log.info('example', 'setting up audio broadcast')
-  audioBroadcaster = new cct.MediaBroadcaster()
 
-  // Minimal audio setup, we could keep a reference to the audio element for muting
-  // This lets us skip cleanup since the sources will be disconnected automatically.
-  audioBroadcaster.on('added', function (added) {
-    added.forEach(function (source) {
-      source.connect(new Audio())
-    })
-  })
-
+  let audioBroadcaster = cct.MediaBroadcaster.createAudioBroadcaster()
   audioSource.connect(audioBroadcaster)
-  conference.attach('audioBroadcaster', audioBroadcaster)
+  conference.attach('audio', audioBroadcaster)
 }
 
 function setupVideoBroadcaster() {
