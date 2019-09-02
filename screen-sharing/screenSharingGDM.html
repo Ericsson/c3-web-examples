@@ -1,0 +1,122 @@
+<!--
+ * Copyright (C) 2016 Ericsson AB. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ -->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Screen sharing</title>
+  <link rel="stylesheet" type="text/css" href="../resources/main.css">
+  <link rel="icon" href="../resources/favicon.ico">
+  <script type="text/javascript" src="https://get.cct.ericsson.net/tag/v0.23.4-rc7-getdisplaymedia/cct.js"></script>
+  <style>
+    #error-display {
+      color: #f00;
+    }
+    video {
+      width: 100%;
+    }
+    button {
+      margin: 0 10px;
+    }
+  </style>
+</head>
+<body>
+  <header></header>
+  <main>
+    <section>
+      <div class="about">
+        <h3>Screen sharing example</h3>
+        This example shows how to set up screen scharing without the use of plugins and a <a href="https://get.cct.ericsson.net/latest/docs/reference/ScreenSource.html" target="_blank">ScreenSource</a>.
+      </div>
+    </section>
+    <div class="margins">
+      <button id="sharing-button" disabled>Start screen sharing</button>
+      <div id="error-display"></div>
+      <br>
+      <video autoplay muted></video>
+    </div>
+    <footer></footer>
+  </main>
+  <script type="application/javascript">
+'use strict'
+
+cct.log.setLogLevel(cct.log.ALL)
+cct.log.color = true
+
+var el = {
+  button: document.getElementById('sharing-button'),
+  error: document.getElementById('error-display'),
+  video: document.querySelector('video'),
+}
+
+var START_SHARING_TEXT = 'Start screen sharing'
+var STOP_SHARING_TEXT = 'Stop screen sharing'
+
+var deviceSource
+
+el.button.disabled = false
+el.button.addEventListener('click', function () {
+  if (deviceSource) {
+    deviceSource.stop()
+    return
+  }
+  el.button.disabled = true
+
+  startScreenSharing({
+    screen: true,
+    // video: {
+    //   frameRate: 30,
+    //   // the cursor constraint does not have browser support as of yet.
+    //   // cursor: {exact: 'never'},
+    // }
+  })
+})
+
+
+function startScreenSharing(constraints) {
+  // Create DeviceSource that captures media from the users screen
+  deviceSource = new cct.DeviceSource(constraints)
+  deviceSource.connect(el.video)
+
+  deviceSource.promise.then(function () {
+    cct.log.info('example', 'screen sharing started successfully')
+    el.button.textContent = STOP_SHARING_TEXT
+    el.button.disabled = false
+    el.error.textContent = ''
+
+    deviceSource.connect(new cct.StreamSink({
+      onStream: function (stream) {
+        // Stream was removed
+        if (!stream) {
+          deviceSource = null
+          el.button.textContent = START_SHARING_TEXT
+          el.button.disabled = false
+        }
+      },
+    }))
+  }, function (error) {
+    cct.log.info('example', 'screen sharing failed, ' + error)
+    el.button.textContent = START_SHARING_TEXT
+    el.button.disabled = false
+    el.error.textContent = error.toString()
+    deviceSource = null
+  })
+
+  return deviceSource
+}
+  </script>
+</body>
+</html>

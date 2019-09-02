@@ -68,7 +68,7 @@
             </li>
             <li>
                 <a href="webrtc/multiClientCall.html">Multi Client Call</a> - Sets up a 2-way audio/video
-                by asking two users to enter the same unique URL.
+                call by asking two users to enter the same unique URL.
             </li>
         </ul>
         <h2>WebRTC media device access</h2>
@@ -89,9 +89,20 @@
             </li>
         </ul>
         <h2>WebRTC screen/application sharing</h2>
+        <p class="warning">
+            Microsoft Edge requires a https connection to function properly.
+            The newer examples are supported from browser versions: Chrome: v.72, Firefox: v.66, Microsoft Edge: v.17.
+        </p>
         <ul>
             <li>
-                <a href="screen-sharing/screenSharing.html">Share Screen or Application</a> - Allow users to share their screen or any running application, given that the Chrome and Firefox extentions are provided.
+                <a href="screen-sharing/screenSharing.html">Share Screen or Application (deprecated)</a> - Allow users to share their screen or any running application, given that the Chrome and Firefox extentions are provided.
+            </li>
+            <li>
+                <a href="screen-sharing/screenSharingGDM.html">Share Screen or Application</a> - Allow users to share their screen or any running application, without the need for any extensions.
+            </li>
+            <li>
+                <a href="screen-sharing/multiClientScreenShare.html">Multi Client Screen Share</a> - Sets up a 2-way screen sharing session
+                by asking two users to enter the same unique URL.
             </li>
         </ul>
         <h2>Sharing data</h2>

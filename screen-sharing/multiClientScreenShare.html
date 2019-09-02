@@ -1,0 +1,207 @@
+<!--
+ * Copyright (C) 2016 Ericsson AB. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ -->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Multi Client Screen Share</title>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="../resources/main.css">
+  <link rel="icon" href="../resources/favicon.ico">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/3.2.1/es6-promise.min.js"></script>
+  <script type="text/javascript" src="https://get.cct.ericsson.net/tag/v0.23.4-rc7-getdisplaymedia/cct.js"></script>
+  <script type="text/javascript" src="../exampleUtils.js"></script>
+  <style type="text/css">
+    #video-container {
+      flex: 0 1 auto;
+      position: relative;
+    }
+    #remote-view-container {
+      width: 100%;
+      height: 100%;
+    }
+    #self-view-container {
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+    #chat-container {
+      margin: 20px;
+      min-width: 400px;
+    }
+    #chat-messages {
+      height: 200px;
+      display: flex;
+      flex-flow: column nowrap;
+      font-size: 1.0em;
+      background-color: rgba(255,255,255,0.9);
+      box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.2);
+      padding-left: 0.5em;
+      padding-right: 0.5em;
+      padding-top: 0.2em;
+      padding-bottom: 0.375em;
+      bottom: 245px;
+      overflow-y: scroll;
+      word-wrap: break-word;
+    }
+    /*All chat message bubbles*/
+    .chat-message {
+      margin-top: 6px;
+      display: inline-block;
+      padding: 2px;
+      padding-left: 5px;
+      padding-right: 5px;
+      max-width: calc(100% - 60px);
+      border: 1px solid rgba(145,145,145,0.8);
+      -webkit-box-shadow: 2px 2px 0px 0px rgba(0,0,0,0.1);
+      -moz-box-shadow: 2px 2px 0px 0px rgba(0,0,0,0.1);
+      box-shadow: 2px 2px 0px 0px rgba(0,0,0,0.1);
+      border-radius: 4px;
+    }
+    /*Self chat message bubbles*/
+    .self-message {
+      align-self: flex-end;
+      background-color: rgba(178,229,255,0.6);
+    }
+    /*Remote chat message bubbles*/
+    .remote-message {
+      align-self: flex-start;
+      background-color: rgba(226,226,226,0.6);
+    }
+    #chat-form {
+      margin: 20px 0;
+    }
+    #chat-form > * {
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <header></header>
+  <main>
+    <section>
+      <div class="about">
+        <h2>Multi Client Screen Share example</h2>
+        <p>
+          This example shows how to connect two <a href="https://get.cct.ericsson.net/latest/docs/reference/Client.html">clients</a> together through a <a href="https://get.cct.ericsson.net/latest/docs/reference/Room.html">room</a>. A random id for the room is generated and used to create a unique URL.
+        </p>
+        Once both have joined the room, a peer-2-peer WebRTC <a href="https://get.cct.ericsson.net/latest/docs/reference/Room.html#startCall__anchor">call</a> is set up and the users can share their screens. Users can also chat with each other.
+      </div>
+      <div class="peer-link">
+        <h3 class="peer-link-title"></h3>
+        <input class="peer-link-input" type="url" value="" size="55">
+        <div class="peer-link-connection-state"></div>
+      </div>
+    </section>
+    <section>
+      <div id="video-container" class="margins">
+        <div class="video-container large" id="remote-view-container">
+          <video id="remote-view" autoplay></video>
+          <label>Remote view</label>
+        </div>
+        <div class="video-container small" id="self-view-container">
+          <video id="self-view" muted autoplay></video>
+          <label>Self view</label>
+        </div>
+      </div>
+      <div id="chat-container">
+        <div id="chat-messages">
+          <label>Chat window</label>
+        </div>
+        <form id="chat-form">
+          <input type="text" id="chat-text" placeholder="Type here">
+          <button type="submit">Send</button>
+        </form>
+        <button id="sharing-button">Start screen share</button>
+      </div>
+    </section>
+    <footer></footer>
+  </main>
+<script>
+'use strict'
+
+cct.log.setLogLevel(cct.log.ALL)
+cct.log.setLogLevel('events', cct.log.NONE)
+cct.log.setLogLevel('own-events', cct.log.NONE)
+cct.log.color = true
+
+var el = {
+  chatText: document.getElementById('chat-text'),
+  chatForm: document.getElementById('chat-form'),
+  chatMessages: document.getElementById('chat-messages'),
+  selfView: document.getElementById('self-view'),
+  remoteView: document.getElementById('remote-view'),
+  button: document.getElementById('sharing-button')
+}
+
+el.button.addEventListener("click", () => {
+  start()
+  el.button.disabled = true
+})
+
+function start() {
+  // create and connect a DeviceSource that captures media from the users screen
+  var deviceSource = new cct.DeviceSource({screen: true})
+  deviceSource.connect(el.selfView)
+
+  var client = new cct.Client({
+    iceServers: EXAMPLE_UTILS_ICE_SERVERS,
+  })
+
+  PeerConnecter.clientInCall(client).then(function (connecter) {
+    var room = connecter.room
+    var call = connecter.call
+
+    // setup call
+    call.setLocalSource('media', deviceSource)
+    call.getRemoteSource('media').connect(el.remoteView)
+
+
+    // setup chat
+    el.chatForm.addEventListener('submit', function (event) {
+      event.preventDefault()
+      if (el.chatText.value) {
+        room.send(el.chatText.value)
+        el.chatText.value = ''
+      }
+    })
+
+    room.on('event:m.room.message', function (event) {
+      var scrollPosition = el.chatMessages.scrollTop + el.chatMessages.clientHeight
+      var wasAtBottom = scrollPosition === el.chatMessages.scrollHeight
+
+      var message = document.createElement('div')
+      message.classList.add('chat-message')
+      message.textContent = event.content.body
+
+      if (event.isOwnEvent) {
+        message.classList.add('self-message')
+      } else {
+        message.classList.add('remote-message')
+      }
+
+      el.chatMessages.appendChild(message)
+
+      if (wasAtBottom) {
+        el.chatMessages.scrollTop = el.chatMessages.scrollHeight
+      }
+    })
+  })
+}
+
+</script>
+<body>
+<html>
