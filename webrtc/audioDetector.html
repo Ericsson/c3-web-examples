@@ -14,166 +14,172 @@
  * limitations under the License.
  -->
 
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Audio detection</title>
-  <link rel="stylesheet" type="text/css" href="../resources/main.css">
-  <link rel="icon" href="../resources/favicon.ico">
-  <script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
-  <script type="text/javascript" src="../exampleUtils.js"></script>
-</head>
-<body>
-  <header></header>
-  <main>
-    <section>
-      <div class="about">
-        <h2>Audio Detection example</h2>
-        This example shows how to use an <a href="https://get.cct.ericsson.net/latest/docs/reference/AudioMeter.html">AudioMeter</a> to detect if your microphone is working correctly. It also shows how to deal with various problems that can occur when requesting microphone access.
-      </div>
-    </section>
-    <div class="margins">
-      <button onclick="setup()">Request Microphone</button>
-      <div id="indicatorContainer">
-        <p id="indicatorText" style="color:white;"></p>
-      </div>
-    </div>
-    <footer></footer>
-  </main>
-<script>
-'use strict'
+ <!DOCTYPE html>
+ <html>
+ <head>
+   <meta charset="utf-8">
+   <title>Audio detection</title>
+   <link rel="stylesheet" type="text/css" href="../resources/main.css">
+   <link rel="icon" href="../resources/favicon.ico">
+   <script type="text/javascript" src="https://get.cct.ericsson.net/latest/cct.js"></script>
+   <script type="text/javascript" src="../exampleUtils.js"></script>
+ </head>
+ <body>
+   <header></header>
+   <main>
+     <section>
+       <div class="about">
+         <h2>Audio Detection example</h2>
+         This example shows how to use an <a href="https://get.cct.ericsson.net/latest/docs/reference/AudioMeter.html">AudioMeter</a> to detect if your microphone is working correctly. It also shows how to deal with various problems that can occur when requesting microphone access.
+       </div>
+     </section>
+     <div class="margins">
+       <button onclick="setup()">Request Microphone</button>
+       <div id="indicatorContainer">
+         <p id="indicatorText" style="color:white;"></p>
+       </div>
+     </div>
+     <footer></footer>
+   </main>
+ <script>
+ 'use strict'
 
-var indicatorContainer = document.getElementById('indicatorContainer')
-var indicatorText = document.getElementById('indicatorText')
-var ERROR = 'ERROR' // Just used for clarity when calling displayMessage/2
-var WARNING = 'WARNING' // Just used for clarity when calling displayMessage/2
+ var indicatorContainer = document.getElementById('indicatorContainer')
+ var indicatorText = document.getElementById('indicatorText')
+ var ERROR = 'ERROR' // Just used for clarity when calling displayMessage/2
+ var WARNING = 'WARNING' // Just used for clarity when calling displayMessage/2
 
-// Constants used to represent the state (_status) of the audio monitor
-AudioMonitor.AUDIO_DETECTED = true
-AudioMonitor.AUDIO_NOT_DETECTED = false
+ // Constants used to represent the state (_status) of the audio monitor
+ AudioMonitor.AUDIO_DETECTED = true
+ AudioMonitor.AUDIO_NOT_DETECTED = false
 
-// The minimum value of what can be considered "audio detected".
-// Can (and should) be tweaked to fit the use case and environment of the AudioMonitor.
-AudioMonitor.AUDIO_DETECTION_THRESHOLD = 0.000001
+ // The minimum value of what can be considered "audio detected".
+ // Can (and should) be tweaked to fit the use case and environment of the AudioMonitor.
+ AudioMonitor.AUDIO_DETECTION_THRESHOLD = 0.000001
 
-/**
- * An AudioMonitor is responsible for monitoring a DeviceSource to detect whether audio is working.
- * It emits various events depending on the status of the DeviceSource.
- * Only one DeviceSource can be monitored at any given time.
- *
- * Usage:
- * var audioMonitor = new AudioMonitor()
- * audioMonitor.on('event_type', callback)
- *
- * audioMonitor.monitor(someDeviceSourceWithAudio)
- */
-function AudioMonitor () {
-  cct._EmitterMixin.call(this)
-  this._handleDeviceAccepted = this._handleDeviceAccepted.bind(this)
-  this._handleDeviceRejected = this._handleDeviceRejected.bind(this)
-  this._handleAudioMeterEvent = this._handleAudioMeterEvent.bind(this)
-  this._audioMeter = new cct.AudioMeter()
-  this._audioMeter.on('filtered', this._handleAudioMeterEvent)
-  this._status = AudioMonitor.AUDIO_DETECTED
-}
+ /**
+  * An AudioMonitor is responsible for monitoring a DeviceSource to detect whether audio is working.
+  * It emits various events depending on the status of the DeviceSource.
+  * Only one DeviceSource can be monitored at any given time.
+  *
+  * Usage:
+  * var audioMonitor = new AudioMonitor()
+  * audioMonitor.on('event_type', callback)
+  *
+  * audioMonitor.monitor(someDeviceSourceWithAudio)
+  */
+ function AudioMonitor () {
+   cct._EmitterMixin.call(this)
+   this._handleDeviceAccepted = this._handleDeviceAccepted.bind(this)
+   this._handleDeviceRejected = this._handleDeviceRejected.bind(this)
+   this._handleAudioMeterEvent = this._handleAudioMeterEvent.bind(this)
+   this._audioMeter = new cct.AudioMeter()
+   this._audioMeter.on('filtered', this._handleAudioMeterEvent)
+   this._status = AudioMonitor.AUDIO_DETECTED
+ }
 
-AudioMonitor.prototype = {
-  constructor: AudioMonitor,
-  monitor: function (device) {
-    if (this._device) {
-      this._device.disconnect()
-    }
-    this._device = device
-    this._emit('requestingAccess')
-    device.promise.then(this._handleDeviceAccepted).catch(this._handleDeviceRejected)
-  },
+ AudioMonitor.prototype = {
+   constructor: AudioMonitor,
+   monitor: function (device) {
+     if (this._device) {
+       this._device.disconnect()
+     }
+     this._device = device
+     this._emit('requestingAccess')
+     device.promise.then(this._handleDeviceAccepted).catch(this._handleDeviceRejected)
+   },
 
-  // Called when DeviceSource.promise is resolved, i.e when mic access is granted.
-  _handleDeviceAccepted: function () {
-    if (webrtcDetectedType === 'plugin') {
-      // cct.AudioMeter uses the WebAudio API, which is not fully supported in Safari/Edge/IE.
-      var unsupportedError = new Error('Microphone access was accepted, but audio cannot be monitored reliably in this browser')
-      unsupportedError.name = 'UnsupportedBrowserError'
-      this._emit('error', unsupportedError)
-      this._emit(unsupportedError.name, unsupportedError)
-    } else {
-      this._device.connect(this._audioMeter)
-      this._handleAudioMeterEvent(this._audioMeter.filtered)
-    }
-  },
+ // Called when DeviceSource.promise is resolved, i.e when mic access is granted.
+ _handleDeviceAccepted: function () {
+     this._device.connect(this._audioMeter)
+     this._handleAudioMeterEvent(this._audioMeter.filtered)
+   },
+   // Called when DeviceSource.promise is resolved, i.e when mic access is granted.
+   //Morteza -- webrtcDetectedType is the Temasys property. Not used with webrtc-adapter
+   _handleDeviceAccepted_Old: function () {
+     if (webrtcDetectedType === 'plugin') {
+       // cct.AudioMeter uses the WebAudio API, which is not fully supported in Safari/Edge/IE.
+       var unsupportedError = new Error('Microphone access was accepted, but audio cannot be monitored reliably in this browser')
+       unsupportedError.name = 'UnsupportedBrowserError'
+       this._emit('error', unsupportedError)
+       this._emit(unsupportedError.name, unsupportedError)
+     } else {
+       this._device.connect(this._audioMeter)
+       this._handleAudioMeterEvent(this._audioMeter.filtered)
+     }
+   },
 
-  // Called when DeviceSource.promise is rejected, for instance if access is denied or because of some other error.
-  _handleDeviceRejected: function (error) {
-    this._emit('error', error)
-    if (error.name === 'NotAllowedError') {
-      this._emit('PermissionDeniedError', error)
-    }
-  },
+   // Called when DeviceSource.promise is rejected, for instance if access is denied or because of some other error.
+   _handleDeviceRejected: function (error) {
+     this._emit('error', error)
+     if (error.name === 'NotAllowedError') {
+       this._emit('PermissionDeniedError', error)
+     }
+   },
 
-  // Called when AudioMeter emits the 'filtered' event
-  _handleAudioMeterEvent: function (level) {
-    // Toggle the internal _status depending on value, and emit events accordingly.
-    if (level <= AudioMonitor.AUDIO_DETECTION_THRESHOLD) {
-      if (this._status === AudioMonitor.AUDIO_DETECTED) {
-        this._emit('silenceDetected')
-      }
-      this._status = AudioMonitor.AUDIO_NOT_DETECTED
-    } else {
-      if (this._status === AudioMonitor.AUDIO_NOT_DETECTED) {
-        this._emit('audioDetected')
-      }
-      this._status = AudioMonitor.AUDIO_DETECTED
-    }
-  },
-}
+   // Called when AudioMeter emits the 'filtered' event
+   _handleAudioMeterEvent: function (level) {
+     // Toggle the internal _status depending on value, and emit events accordingly.
+     if (level <= AudioMonitor.AUDIO_DETECTION_THRESHOLD) {
+       if (this._status === AudioMonitor.AUDIO_DETECTED) {
+         this._emit('silenceDetected')
+       }
+       this._status = AudioMonitor.AUDIO_NOT_DETECTED
+     } else {
+       if (this._status === AudioMonitor.AUDIO_NOT_DETECTED) {
+         this._emit('audioDetected')
+       }
+       this._status = AudioMonitor.AUDIO_DETECTED
+     }
+   },
+ }
 
-// Helper for displaying a message with various background colors.
-function displayMessage (message, type) {
-  if (indicatorText.innerText !== message) {
-    if (type === ERROR) {
-      indicatorContainer.style.backgroundColor = 'red'
-    } else if (type === WARNING) {
-      indicatorContainer.style.backgroundColor = 'orange'
-    } else {
-      indicatorContainer.style.backgroundColor = 'green'
-    }
-    indicatorText.innerText = message
-  }
-}
+ // Helper for displaying a message with various background colors.
+ function displayMessage (message, type) {
+   if (indicatorText.innerText !== message) {
+     if (type === ERROR) {
+       indicatorContainer.style.backgroundColor = 'red'
+     } else if (type === WARNING) {
+       indicatorContainer.style.backgroundColor = 'orange'
+     } else {
+       indicatorContainer.style.backgroundColor = 'green'
+     }
+     indicatorText.innerText = message
+   }
+ }
 
-// Create a monitor and set up event listeners
-var monitor = new AudioMonitor()
-monitor.on('PermissionDeniedError', function () {
-  displayMessage('Microphone access was rejected by the user', ERROR)
-})
-monitor.on('UnsupportedBrowserError', function (error) {
-  displayMessage(error.message, WARNING)
-})
+ // Create a monitor and set up event listeners
+ var monitor = new AudioMonitor()
+ monitor.on('PermissionDeniedError', function () {
+   displayMessage('Microphone access was rejected by the user', ERROR)
+ })
+ monitor.on('UnsupportedBrowserError', function (error) {
+   displayMessage(error.message, WARNING)
+ })
 
-monitor.on('audioDetected', function () {
-  displayMessage('Audio detected')
-})
+ monitor.on('audioDetected', function () {
+   displayMessage('Audio detected')
+ })
 
-monitor.on('silenceDetected', function () {
-  displayMessage('No audio detected', ERROR)
-})
+ monitor.on('silenceDetected', function () {
+   displayMessage('No audio detected', ERROR)
+ })
 
-monitor.on('requestingAccess', function () {
-  displayMessage('Waiting for user to give microphone access', WARNING)
-})
+ monitor.on('requestingAccess', function () {
+   displayMessage('Waiting for user to give microphone access', WARNING)
+ })
 
-monitor.on('error', function (error) {
-  console.info('Error caught by AudioMonitor:', error)
-})
+ monitor.on('error', function (error) {
+   console.info('Error caught by AudioMonitor:', error)
+ })
 
-// This function is called when the "Request microphone" button is pressed.
-// Creates a DeviceSource and monitors it.
-function setup () {
-  var device = new cct.DeviceSource({audio:true})
-  monitor.monitor(device)
-}
+ // This function is called when the "Request microphone" button is pressed.
+ // Creates a DeviceSource and monitors it.
+ function setup () {
+   var device = new cct.DeviceSource({audio:true})
+   monitor.monitor(device)
+ }
 
-</script>
-</body>
-</html>
+ </script>
+ </body>
+ </html>

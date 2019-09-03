@@ -303,13 +303,13 @@ footer:after {
     ##       ##     ## ##   ###    ##    ##    ##
     ##        #######  ##    ##    ##     ######
 */
-
+/*
 @font-face {
     font-family: "Ericsson";
     font-style: normal;
     font-weight: 400;
     src: url("fonts/Ericsson/EricssonCapitalTT.ttf") format("truetype")
-}
+} */
 @font-face {
     font-family: "Lato";
     font-style: normal;
